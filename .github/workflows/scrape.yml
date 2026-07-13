@@ -1,0 +1,50 @@
+name: Haberleri Otomatik Çek
+
+# Saat başı otomatik çalışır + gerektiğinde elle tetiklenebilir.
+# Scraper haberleri çeker, değişiklik varsa scrapedNews.json'u repoya commit'ler.
+# Netlify/Vercel bu push'u görüp siteyi otomatik yeniden yayınlar.
+on:
+  schedule:
+    - cron: '0 * * * *'   # her saat başı (UTC)
+  workflow_dispatch:        # Actions sekmesinden "Run workflow" ile elle çalıştırma
+
+# Bot'un repoya commit atabilmesi için yazma izni
+permissions:
+  contents: write
+
+# Aynı anda birden fazla tarama çakışmasın
+concurrency:
+  group: scrape-news
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu çek
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Bağımlılıkları yükle
+        run: npm ci
+
+      - name: Haberleri çek
+        run: npm run scrape
+
+      - name: Değişiklik varsa commit'le ve push'la
+        run: |
+          git config user.name "sozmilletin-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/scrapedNews.json
+          if git diff --staged --quiet; then
+            echo "Yeni haber yok — commit atlanıyor."
+          else
+            git commit -m "chore: otomatik haber güncellemesi"
+            git push
+            echo "Haberler güncellendi ve push'landı."
+          fi
