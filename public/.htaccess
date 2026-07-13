@@ -1,0 +1,21 @@
+# Tek Sayfa Uygulaması (SPA) yönlendirmesi — Apache/Natro
+# /admin, /haber/xxx gibi adresler doğrudan açıldığında veya sayfa yenilendiğinde
+# 404 yerine index.html sunulur; yönlendirmeyi React Router devralır.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Statik varlıklar için önbellek (performans)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+</IfModule>
