@@ -83,7 +83,7 @@ function App() {
 
         {/* Sol Reklam Kolonu */}
         <aside className="site-ad-col site-ad-col--left">
-          <AdZone type="sidebar-rect" />
+          <AdZone type="sidebar-tall" />
         </aside>
 
         {/* Ana İçerik */}
@@ -120,7 +120,7 @@ function App() {
 
         {/* Sağ Reklam Kolonu */}
         <aside className="site-ad-col site-ad-col--right">
-          <AdZone type="sidebar-rect" />
+          <AdZone type="sidebar-tall" />
         </aside>
 
       </div>
