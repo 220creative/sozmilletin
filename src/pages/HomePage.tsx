@@ -101,8 +101,6 @@ export const HomePage: React.FC<HomePageProps> = ({
                   ))}
                 </div>
               </div>
-
-              <AdZone type="sidebar-tall" className="ad-sticky" />
             </div>
           </div>
         ) : (
