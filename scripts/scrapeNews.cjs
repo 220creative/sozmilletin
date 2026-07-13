@@ -133,17 +133,31 @@ async function getExtractor() {
   return _extractor;
 }
 
+// HTML varlık kodlarını (&apos; &#39; &uuml; vb.) gerçek karakterlere çevir
+function decodeEntities(str) {
+  if (!str) return str;
+  return String(str)
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => { try { return String.fromCodePoint(parseInt(h, 16)); } catch { return _; } })
+    .replace(/&#(\d+);/g, (_, d) => { try { return String.fromCodePoint(parseInt(d, 10)); } catch { return _; } })
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&apos;/g, "'")
+    .replace(/&rsquo;/g, '’').replace(/&lsquo;/g, '‘')
+    .replace(/&quot;/g, '"').replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”')
+    .replace(/&hellip;/g, '…').replace(/&ndash;/g, '–').replace(/&mdash;/g, '—')
+    .replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&'); // &amp; en sona (çift kodlamayı doğru çözmek için)
+}
+
 // İçerik HTML'ini temiz paragraflara çevir
 function htmlToParagraphs(html) {
   if (!html) return [];
-  return html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&#39;|&rsquo;|&lsquo;/g, "'")
-    .replace(/&quot;|&ldquo;|&rdquo;/g, '"')
+  return decodeEntities(
+    html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+  )
     .replace(/[ \t]+/g, ' ')
     .split('\n')
     .map(p => p.trim())
@@ -227,26 +241,19 @@ async function scrapeAll() {
         authorName = String(authorName);
         if (authorName.includes('@') || authorName.length < 3) authorName = feedSource.name;
 
-        let summary = (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').substring(0, 200).trim();
+        let summary = decodeEntities((item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').substring(0, 200).trim();
         if (summary.length >= 200) summary += '...';
 
         // Zengin içerik: önce content:encoded (genelde tam metin), sonra diğerleri
         const rawContent = item.contentEncoded || item['content:encoded'] || item.content || item.description || '';
-        const paragraphs = rawContent
-          .replace(/<br\s*\/?>/gi, '\n')
-          .replace(/<\/p>/gi, '\n')
-          .replace(/<[^>]*>/g, '')
-          .replace(/&nbsp;/g, ' ')
-          .split('\n')
-          .map(p => p.trim())
-          .filter(p => p.length > 40);
+        const paragraphs = htmlToParagraphs(rawContent).filter(p => p.length > 40);
 
         if (paragraphs.length === 0 && summary) paragraphs.push(summary);
 
         allScrapedNews.push({
           id,
           link: item.link || '',
-          title: item.title,
+          title: decodeEntities(item.title),
           summary: summary || item.title,
           content: paragraphs.length > 0 ? paragraphs : [item.title],
           category,
