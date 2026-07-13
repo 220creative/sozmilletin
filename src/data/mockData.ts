@@ -12,6 +12,7 @@ export interface NewsItem {
   content: string[];
   category: string;
   image: string;
+  link?: string;
   date: string;
   author: {
     name: string;

@@ -9,13 +9,19 @@ interface NewsCardProps {
   variant?: 'hero' | 'standard' | 'sidebar';
 }
 
+const PLACEHOLDER = '/haber-placeholder.svg';
+// Bozuk/erişilemeyen görsellerde markalı yer tutucuya düş (kırık görsel gösterme)
+const imgFallback = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  if (!e.currentTarget.src.endsWith(PLACEHOLDER)) e.currentTarget.src = PLACEHOLDER;
+};
+
 export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '', variant = 'standard' }) => {
 
   if (variant === 'hero') {
     // Manşet: görselin üstüne binen başlık (profesyonel portal stili)
     return (
       <div className={`hero-card ${className}`} onClick={onClick}>
-        <img src={news.image} alt={news.title} className="hero-card-img" loading="eager" />
+        <img src={news.image} alt={news.title} className="hero-card-img" loading="eager" onError={imgFallback} />
         <div className="hero-card-overlay">
           <span className="hero-kicker">{news.category}</span>
           <h2 className="hero-card-title">{news.title}</h2>
@@ -35,7 +41,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '
   if (variant === 'sidebar') {
     return (
       <div className={`sidebar-list-item ${className}`} onClick={onClick}>
-        <img src={news.image} alt={news.title} className="sidebar-list-img" />
+        <img src={news.image} alt={news.title} className="sidebar-list-img" loading="lazy" onError={imgFallback} />
         <div className="sidebar-list-content">
           <div>
             <span className="category-tag" style={{ fontSize: '9px', padding: '2px 6px', marginBottom: '6px' }}>
@@ -54,7 +60,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '
   return (
     <div className={`classic-card ${className}`} onClick={onClick}>
       <div className="classic-card-img-wrapper">
-        <img src={news.image} alt={news.title} className="classic-card-img" />
+        <img src={news.image} alt={news.title} className="classic-card-img" loading="lazy" onError={imgFallback} />
       </div>
       <div className="classic-card-content">
         <span className="category-tag">{news.category}</span>
