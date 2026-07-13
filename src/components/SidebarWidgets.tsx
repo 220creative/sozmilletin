@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { CloudRain, Sun, Cloud, Moon, MapPin, Clock } from 'lucide-react';
+import { Sun, Cloud, Moon, MapPin, Clock } from 'lucide-react';
 
 // --- Hava Durumu Widget ---
 export const WeatherWidget: React.FC = () => {
   return (
-    <div className="widget-card" style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: 'white', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow-premium)' }}>
+    <div className="widget-card" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow-premium)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.9, fontSize: '12px', marginBottom: '8px' }}>
             <MapPin size={14} />
             <span>Kocaeli</span>
           </div>
-          <div style={{ fontSize: '32px', fontWeight: 800, lineHeight: 1 }}>18°</div>
-          <div style={{ fontSize: '14px', marginTop: '4px', opacity: 0.9 }}>Parçalı Bulutlu</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, lineHeight: 1 }}>32°</div>
+          <div style={{ fontSize: '14px', marginTop: '4px', opacity: 0.9 }}>Açık / Güneşli</div>
         </div>
-        <CloudRain size={48} color="white" strokeWidth={1.5} />
+        <Sun size={48} color="white" strokeWidth={1.5} />
       </div>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '15px' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '11px', opacity: 0.8 }}>Yarın</div>
           <Sun size={20} style={{ margin: '4px auto' }} />
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>22°</div>
+          <div style={{ fontSize: '13px', fontWeight: 600 }}>34°</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '11px', opacity: 0.8 }}>Çarşamba</div>
-          <Cloud size={20} style={{ margin: '4px auto' }} />
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>19°</div>
+          <Sun size={20} style={{ margin: '4px auto' }} />
+          <div style={{ fontSize: '13px', fontWeight: 600 }}>31°</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '11px', opacity: 0.8 }}>Perşembe</div>
-          <CloudRain size={20} style={{ margin: '4px auto' }} />
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>15°</div>
+          <Cloud size={20} style={{ margin: '4px auto' }} />
+          <div style={{ fontSize: '13px', fontWeight: 600 }}>29°</div>
         </div>
       </div>
     </div>
@@ -95,22 +95,22 @@ export const PrayerTimesWidget: React.FC = () => {
   );
 };
 
-// --- Puan Durumu Widget (TFF 1. Lig) ---
+// --- Puan Durumu Widget (Trendyol Süper Lig) ---
 export const LeagueTableWidget: React.FC = () => {
   const tableData = [
-    { pos: 1, team: 'Eyüpspor', p: 32, pts: 71 },
-    { pos: 2, team: 'Göztepe', p: 32, pts: 66 },
-    { pos: 3, team: 'Kocaelispor', p: 32, pts: 55, highlight: true },
-    { pos: 4, team: 'Çorum FK', p: 32, pts: 55 },
-    { pos: 5, team: 'Sakaryaspor', p: 32, pts: 54 },
-    { pos: 6, team: 'Bodrum FK', p: 32, pts: 53 },
+    { pos: 1, team: 'Galatasaray', p: 34, pts: 85 },
+    { pos: 2, team: 'Fenerbahçe', p: 34, pts: 82 },
+    { pos: 3, team: 'Beşiktaş', p: 34, pts: 68 },
+    { pos: 4, team: 'Trabzonspor', p: 34, pts: 64 },
+    { pos: 5, team: 'Kocaelispor', p: 34, pts: 61, highlight: true },
+    { pos: 6, team: 'Başakşehir', p: 34, pts: 55 },
   ];
 
   return (
     <div className="widget-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden', boxShadow: 'var(--shadow-premium)' }}>
       <div style={{ background: '#1d4ed8', color: 'white', padding: '12px 15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800 }}>Trendyol 1. Lig</h4>
-        <span style={{ fontSize: '11px', opacity: 0.8 }}>32. Hafta</span>
+        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800 }}>Trendyol Süper Lig</h4>
+        <span style={{ fontSize: '11px', opacity: 0.8 }}>34. Hafta</span>
       </div>
       
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
