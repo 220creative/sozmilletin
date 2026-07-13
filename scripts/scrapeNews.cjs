@@ -5,8 +5,10 @@ const Parser = require('rss-parser');
 const crypto = require('crypto');
 
 const parser = new Parser({
-  headers: { 
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
+  // Takılan/engelli kaynaklar 15 saniyede pes etsin (varsayılan 60sn çok uzun)
+  timeout: 15000,
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   }
 });
 
@@ -279,9 +281,17 @@ async function scrapeAll() {
   console.log(`[${new Date().toISOString()}] Bot başarıyla ${optimizedNewsList.length} adet haberi (maksimum 200 limitli) kaydetti.`);
 }
 
-scrapeAll();
-
 if (process.argv.includes('--daemon')) {
+  scrapeAll();
   console.log('Bot DAEMON modunda çalışıyor. Her 5 dakikada bir tarama yapacak...');
   setInterval(scrapeAll, 5 * 60 * 1000);
+} else {
+  // Tek seferlik çalıştırma: iş bitince süreci hemen kapat.
+  // (Engellenen kaynakların açık kalan bağlantıları node'u bekletmesin diye.)
+  scrapeAll()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error('Tarama sırasında beklenmeyen hata:', err);
+      process.exit(1);
+    });
 }
