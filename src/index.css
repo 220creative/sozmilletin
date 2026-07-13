@@ -1145,35 +1145,36 @@ body.dark-mode .breaking-time { color: #f87171; }
 
 /* 6. 3 Sütunlu Site Yerleşimi (Sol Reklam | İçerik | Sağ Reklam) */
 
-/* Tam genişlik wrapper — reklam sütunları + içerik yan yana */
 .site-layout {
-  display: flex;
+  display: block;
   width: 100%;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 20px;
 }
 
-/* Ana içerik alanı — esnek genişler */
+/* Ana içerik alanı */
 .site-content {
   width: 100%;
   max-width: var(--container-max-width);
-  min-width: 0; /* flexbox overflow düzeltmesi */
+  margin: 0 auto;
 }
 
-/* Reklam sütunları — varsayılan gizli, geniş ekranda görünür */
+/* Reklam sütunları — varsayılan gizli, çok geniş ekranda görünür */
 .site-ad-col {
   display: none;
-  flex-shrink: 0;
   width: 160px;
   padding: 16px 8px;
-  display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Yalnızca 1440px ve üzeri ekranlarda reklam sütunlarını göster */
-@media (min-width: 1440px) {
+/* Yalnızca 1560px ve üzeri ekranlarda reklam sütunlarını göster */
+@media (min-width: 1560px) {
+  .site-layout {
+    display: grid;
+    grid-template-columns: 160px minmax(auto, var(--container-max-width)) 160px;
+    justify-content: center;
+    gap: 20px;
+    margin: 0 auto;
+  }
   .site-ad-col {
     display: flex;
   }
