@@ -4,34 +4,34 @@ import { Sun, Cloud, Moon, MapPin, Clock } from 'lucide-react';
 // --- Hava Durumu Widget ---
 export const WeatherWidget: React.FC = () => {
   return (
-    <div className="widget-card" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow-premium)' }}>
+    <div className="widget-card" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: 'white', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow-premium)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.9, fontSize: '12px', marginBottom: '8px' }}>
             <MapPin size={14} />
-            <span>Kocaeli</span>
+            <span>İzmit, Kocaeli</span>
           </div>
-          <div style={{ fontSize: '32px', fontWeight: 800, lineHeight: 1 }}>32°</div>
-          <div style={{ fontSize: '14px', marginTop: '4px', opacity: 0.9 }}>Açık / Güneşli</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, lineHeight: 1 }}>28°</div>
+          <div style={{ fontSize: '14px', marginTop: '4px', opacity: 0.9 }}>Parçalı bulutlu</div>
         </div>
-        <Sun size={48} color="white" strokeWidth={1.5} />
+        <Cloud size={48} color="white" strokeWidth={1.5} />
       </div>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '15px' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', opacity: 0.8 }}>Yarın</div>
-          <Sun size={20} style={{ margin: '4px auto' }} />
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>34°</div>
+          <div style={{ fontSize: '11px', opacity: 0.8 }}>Salı</div>
+          <Cloud size={20} style={{ margin: '4px auto' }} />
+          <div style={{ fontSize: '13px', fontWeight: 600 }}>26°</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '11px', opacity: 0.8 }}>Çarşamba</div>
-          <Sun size={20} style={{ margin: '4px auto' }} />
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>31°</div>
+          <Sun size={20} style={{ margin: '4px auto', color: '#fbbf24' }} />
+          <div style={{ fontSize: '13px', fontWeight: 600 }}>29°</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '11px', opacity: 0.8 }}>Perşembe</div>
-          <Cloud size={20} style={{ margin: '4px auto' }} />
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>29°</div>
+          <Sun size={20} style={{ margin: '4px auto', color: '#fbbf24' }} />
+          <div style={{ fontSize: '13px', fontWeight: 600 }}>30°</div>
         </div>
       </div>
     </div>
@@ -98,12 +98,12 @@ export const PrayerTimesWidget: React.FC = () => {
 // --- Puan Durumu Widget (Trendyol Süper Lig) ---
 export const LeagueTableWidget: React.FC = () => {
   const tableData = [
-    { pos: 1, team: 'Galatasaray', p: 34, pts: 85 },
-    { pos: 2, team: 'Fenerbahçe', p: 34, pts: 82 },
-    { pos: 3, team: 'Beşiktaş', p: 34, pts: 68 },
-    { pos: 4, team: 'Trabzonspor', p: 34, pts: 64 },
-    { pos: 5, team: 'Kocaelispor', p: 34, pts: 61, highlight: true },
-    { pos: 6, team: 'Başakşehir', p: 34, pts: 55 },
+    { pos: 1, team: 'Galatasaray', p: 34, pts: 77 },
+    { pos: 2, team: 'Fenerbahçe', p: 34, pts: 74 },
+    { pos: 3, team: 'Trabzonspor', p: 34, pts: 69 },
+    { pos: 4, team: 'Beşiktaş', p: 34, pts: 60 },
+    { pos: 5, team: 'Başakşehir', p: 34, pts: 57 },
+    { pos: 6, team: 'Kocaelispor', p: 34, pts: 52, highlight: true },
   ];
 
   return (
