@@ -33,7 +33,16 @@ export const TopBar: React.FC = () => {
           ))}
         </div>
 
-        <div className="topbar-date">{today}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Türk Bayrağı */}
+          <svg width="28" height="19" viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: '2px', flexShrink: 0 }}>
+            <rect width="30" height="20" fill="#E30A17"/>
+            <circle cx="11" cy="10" r="5.5" fill="white"/>
+            <circle cx="12.8" cy="10" r="4.3" fill="#E30A17"/>
+            <polygon points="17.5,10 20.5,8.2 19.7,11.5 22.5,13.5 19.1,13.5 17.5,16.5 15.9,13.5 12.5,13.5 15.3,11.5 14.5,8.2" fill="white" transform="translate(-2.5, -3) scale(0.85)"/>
+          </svg>
+          <div className="topbar-date">{today}</div>
+        </div>
 
         <div className="topbar-socials">
           {socials.map((label) => (

@@ -43,10 +43,16 @@ export const HomePage: React.FC<HomePageProps> = ({
     if (showSavedOnly && !savedNewsIds.includes(news.id)) return false;
     
     if (activeCategory === 'Kocaeli') {
-      const qTokens = ['kocaeli', 'gebze', 'darıca', 'izmit', 'körfez', 'derince', 'çayırova', 'kocaelispor', 'gölcük', 'kartepe', 'başiskele', 'kandıra', 'karamürsel', 'dilovası'];
+      const qTokens = ['kocaeli', 'gebze', 'darıca', 'izmit', 'körfez', 'derince', 'çayırova', 'gölcük', 'kartepe', 'başiskele', 'kandıra', 'karamürsel', 'dilovası'];
       const textToSearch = (news.title + ' ' + news.summary + ' ' + news.author.name).toLowerCase();
       const isLocal = qTokens.some(token => textToSearch.includes(token));
       if (!isLocal) return false;
+    } else if (activeCategory === 'Kocaeli Spor') {
+      const qTokens = ['kocaelispor', 'kocaeli spor', 'körfez sk', 'derincespor', 'darıca gençlerbirliği', 'gebzespor', 'gölcükspor'];
+      const textToSearch = (news.title + ' ' + news.summary + ' ' + news.author.name).toLowerCase();
+      const isLocalSport = qTokens.some(token => textToSearch.includes(token));
+      // Either category is Spor AND mentions local sports, OR it directly mentions local sports
+      if (!isLocalSport) return false;
     } else if (activeCategory !== 'Tümü' && news.category !== activeCategory) {
       return false;
     }

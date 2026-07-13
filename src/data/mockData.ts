@@ -45,6 +45,7 @@ export interface AdCampaign {
 export const CATEGORIES = [
   'Tümü',
   'Kocaeli',
+  'Kocaeli Spor',
   'Siyaset',
   'Magazin',
   'Asayiş',
