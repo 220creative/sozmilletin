@@ -98,9 +98,6 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div className="sidebar-column">
-              <WeatherWidget />
-              <LeagueTableWidget />
-              <PrayerTimesWidget />
               <AdZone type="sidebar-rect" />
 
               <div>
@@ -112,10 +109,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
               </div>
 
-              <div>
+              <WeatherWidget />
+              <PrayerTimesWidget />
+              <LeagueTableWidget />
+
+              <div style={{ position: 'sticky', top: '90px' }}>
                 <h3 className="section-heading">Öne Çıkanlar</h3>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {filteredNews.slice(6, 11).map((news) => (
+                  {newsList.slice(6, 11).map((news) => (
                     <NewsCard key={`featured-${news.id}`} news={news} variant="sidebar" onClick={() => openNews(news)} />
                   ))}
                 </div>
