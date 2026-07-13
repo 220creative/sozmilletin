@@ -21,7 +21,9 @@ const parser = new Parser({
 });
 
 const FEEDS = [
-  { name: 'Kocaeli Gündem', url: 'https://kocaeligundem.com/rss' },
+  { name: 'Özgür Kocaeli', url: 'https://www.ozgurkocaeli.com.tr/rss' },
+  { name: 'Çağdaş Kocaeli', url: 'https://www.cagdaskocaeli.com.tr/rss' },
+  { name: 'Kocaeli Gazetesi', url: 'https://www.kocaeligazetesi.com.tr/rss' },
   { name: 'Darıca Gazetesi', url: 'https://www.daricagazetesi.com.tr/rss' },
   { name: 'Gebze Hürses', url: 'https://www.gebzehurses.com/rss.xml' },
   { name: 'Hürriyet', url: 'https://www.hurriyet.com.tr/rss/gundem' },
