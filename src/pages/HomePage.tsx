@@ -47,11 +47,11 @@ export const HomePage: React.FC<HomePageProps> = ({
       const textToSearch = (news.title + ' ' + news.summary + ' ' + news.author.name).toLowerCase();
       const isLocal = qTokens.some(token => textToSearch.includes(token));
       if (!isLocal) return false;
-    } else if (activeCategory === 'Kocaeli Spor') {
-      const qTokens = ['kocaelispor', 'kocaeli spor', 'körfez sk', 'derincespor', 'darıca gençlerbirliği', 'gebzespor', 'gölcükspor'];
+    } else if (activeCategory === 'Spor Kocaeli') {
+      const isSportCategory = news.category.toLowerCase().includes('spor');
+      const qTokens = ['kocaeli', 'gebze', 'darıca', 'izmit', 'körfez', 'derince', 'çayırova', 'gölcük', 'kartepe', 'başiskele', 'kandıra', 'karamürsel', 'dilovası', 'kocaelispor', 'körfez sk', 'derincespor', 'gebzespor', 'gölcükspor'];
       const textToSearch = (news.title + ' ' + news.summary + ' ' + news.author.name).toLowerCase();
-      const isLocalSport = qTokens.some(token => textToSearch.includes(token));
-      // Either category is Spor AND mentions local sports, OR it directly mentions local sports
+      const isLocalSport = isSportCategory && qTokens.some(token => textToSearch.includes(token));
       if (!isLocalSport) return false;
     } else if (activeCategory !== 'Tümü' && news.category !== activeCategory) {
       return false;
