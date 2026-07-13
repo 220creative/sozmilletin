@@ -1,12 +1,13 @@
 name: Haberleri Otomatik Çek
 
-# Saat başı otomatik çalışır + gerektiğinde elle tetiklenebilir.
-# Scraper haberleri çeker, değişiklik varsa scrapedNews.json'u repoya commit'ler.
-# Netlify/Vercel bu push'u görüp siteyi otomatik yeniden yayınlar.
+# 6 saatte bir otomatik çalışır + elle tetiklenebilir.
+# Scraper haberleri çeker, scrapedNews.json'u repoya commit'ler.
+# [skip netlify] etiketi sayesinde Netlify build TETIKLENMEZ — build kredisi harcanmaz.
+# Netlify deploy ayrı bir günlük workflow (deploy.yml) ile yapılır.
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 6 saatte bir (UTC: 00:00, 06:00, 12:00, 18:00) — Netlify ücretsiz build sınırında kalır
-  workflow_dispatch:        # Actions sekmesinden "Run workflow" ile elle çalıştırma
+    - cron: '0 */6 * * *'  # 6 saatte bir (UTC: 00:00, 06:00, 12:00, 18:00)
+  workflow_dispatch:        # Actions sekmesinden elle çalıştırma
 
 # Bot'un repoya commit atabilmesi için yazma izni
 permissions:
@@ -44,7 +45,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "Yeni haber yok — commit atlanıyor."
           else
-            git commit -m "chore: otomatik haber güncellemesi"
+            git commit -m "chore: otomatik haber güncellemesi [skip netlify]"
             git push
             echo "Haberler güncellendi ve push'landı."
           fi

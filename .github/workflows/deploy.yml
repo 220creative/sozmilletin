@@ -1,0 +1,18 @@
+name: Netlify Günlük Deploy
+
+# Günde 1 kez sabah 06:00 UTC (Türkiye 09:00) Netlify'ı tetikler.
+# Bu sayede scraper her 6 saatte commit atsa da Netlify sadece günde 1 build yapar.
+# Aylık 30 build × ~2 dk = 60 dakika/ay (300 dakika limitinin çok altında).
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Her gün 06:00 UTC = Türkiye 09:00
+  workflow_dispatch:       # Elle de tetiklenebilir
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Netlify Build Hook'u tetikle
+        run: |
+          curl -s -X POST "${{ secrets.NETLIFY_BUILD_HOOK }}"
+          echo "Netlify deploy tetiklendi."
