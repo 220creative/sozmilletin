@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { AdminApp } from './admin/AdminApp';
+import { getMergedNews } from './admin/adminStore';
 import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
@@ -18,12 +20,14 @@ const scrapedNews = (scrapedNewsData && scrapedNewsData.length > 0)
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState<string>('Tümü');
   const [showSavedOnly, setShowSavedOnly] = useState<boolean>(false);
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [mounted, setMounted] = useState(false);
-  const [newsList, setNewsList] = useState<NewsItem[]>(() => scrapedNews.map(n => ({ ...n })));
+  // Admin katmanı (elle eklenen/düzenlenen/gizlenen/öne çıkarılan) taban haberlere uygulanır
+  const [newsList, setNewsList] = useState<NewsItem[]>(() => getMergedNews(scrapedNews));
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -62,6 +66,9 @@ function App() {
   };
 
   if (!mounted) return null;
+
+  // Yönetim paneli: site başlık/çubukları olmadan tam ekran
+  if (location.pathname.startsWith('/admin')) return <AdminApp />;
 
   return (
     <div className="app-container">

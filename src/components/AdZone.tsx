@@ -1,5 +1,5 @@
 import React from 'react';
-import { mockAds } from '../data/mockData';
+import { getAds } from '../admin/adminStore';
 
 interface AdZoneProps {
   type: 'leaderboard' | 'sidebar-rect' | 'sidebar-tall' | 'native';
@@ -7,7 +7,7 @@ interface AdZoneProps {
 }
 
 export const AdZone: React.FC<AdZoneProps> = ({ type, className = '' }) => {
-  const adCampaign = mockAds.find((ad) => ad.type === type);
+  const adCampaign = getAds().find((ad) => ad.type === type);
 
   // Reklam boyutları
   let dims = { w: '', h: '' };
