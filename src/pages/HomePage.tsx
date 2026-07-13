@@ -41,7 +41,16 @@ export const HomePage: React.FC<HomePageProps> = ({
       return news.title.toLowerCase().includes(query) || news.summary.toLowerCase().includes(query);
     }
     if (showSavedOnly && !savedNewsIds.includes(news.id)) return false;
-    if (activeCategory !== 'Tümü' && news.category !== activeCategory) return false;
+    
+    if (activeCategory === 'Kocaeli') {
+      const qTokens = ['kocaeli', 'gebze', 'darıca', 'izmit', 'körfez', 'derince', 'çayırova', 'kocaelispor', 'gölcük', 'kartepe', 'başiskele', 'kandıra', 'karamürsel', 'dilovası'];
+      const textToSearch = (news.title + ' ' + news.summary + ' ' + news.author.name).toLowerCase();
+      const isLocal = qTokens.some(token => textToSearch.includes(token));
+      if (!isLocal) return false;
+    } else if (activeCategory !== 'Tümü' && news.category !== activeCategory) {
+      return false;
+    }
+    
     return true;
   });
 
