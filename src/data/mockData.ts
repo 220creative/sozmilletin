@@ -54,6 +54,42 @@ export const CATEGORIES = [
 
 export const mockNews: NewsItem[] = [
   {
+    id: 'n-gebze-1',
+    title: 'Gebzespor Yeni Sezon Hazırlıklarına Hızlı Başladı',
+    summary: 'Bölgesel Amatör Lig temsilcimiz Gebzespor, yeni sezon öncesi yaptığı transferler ve yoğun antrenman programı ile dikkat çekiyor. Taraftarlar şampiyonluk bekliyor.',
+    content: [
+      'Gebzespor, yeni sezona iddialı hazırlanıyor. Takımın kamp yaptığı tesislerdeki hırsı gözlerden kaçmadı.',
+      'Teknik direktör yaptığı açıklamada "Bu sene o sene, Gebzespor layık olduğu profesyonel liglere dönecek" ifadelerini kullandı.'
+    ],
+    category: 'Spor',
+    image: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün',
+    author: { name: 'Spor Servisi', avatar: '/haber-placeholder.svg' },
+    views: 854,
+    likes: 120,
+    readTime: '2 dk',
+    reactions: { like: 80, heart: 40, sad: 0, fire: 50 },
+    comments: []
+  },
+  {
+    id: 'n-darica-1',
+    title: 'Darıca Gençlerbirliği Yönetiminden Kritik Karar',
+    summary: 'Darıca Gençlerbirliği yönetimi, olağanüstü toplanarak takımın geleceği ve altyapı yatırımları hakkında önemli kararlar aldı.',
+    content: [
+      'Kulüp tesislerinde gerçekleşen toplantıda altyapıya daha fazla bütçe ayrılması kararlaştırıldı.',
+      'Darıca Gençlerbirliği taraftarı alınan bu kararı desteklediklerini açıkladı.'
+    ],
+    category: 'Spor',
+    image: 'https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün',
+    author: { name: 'Spor Servisi', avatar: '/haber-placeholder.svg' },
+    views: 642,
+    likes: 90,
+    readTime: '1 dk',
+    reactions: { like: 60, heart: 20, sad: 2, fire: 15 },
+    comments: []
+  },
+  {
     id: 'hero-1',
     title: 'Milletin Sesi Kürsüde: Yeni Demokratik Katılım Platformu Söz Milletin Yayında!',
     summary: 'Türkiye genelinde vatandaşların fikirlerini doğrudan paylaşabileceği, yerel ve ulusal sorunları dile getirebileceği yeni nesil bağımsız medya platformu Söz Milletin bugün kapılarını açtı.',
