@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
-import { CATEGORIES } from '../data/mockData';
+import { getCategories } from '../admin/adminStore';
 import { Sun, Moon, Search, Bookmark } from 'lucide-react';
 
 interface HeaderProps {
@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Orta: Kategoriler */}
         <ul className="nav-links">
-          {CATEGORIES.map(category => (
+          {getCategories().map(category => (
             <li key={category}>
               <button
                 className={`nav-link ${activeCategory === category && !showSavedOnly ? 'active' : ''}`}

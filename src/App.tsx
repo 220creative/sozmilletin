@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { AdminApp } from './admin/AdminApp';
-import { getMergedNews } from './admin/adminStore';
+import { getMergedNews, getSettings, applyTheme, injectAnalytics, setDocumentSeo } from './admin/adminStore';
 import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
@@ -29,7 +29,17 @@ function App() {
   // Admin katmanı (elle eklenen/düzenlenen/gizlenen/öne çıkarılan) taban haberlere uygulanır
   const [newsList, setNewsList] = useState<NewsItem[]>(() => getMergedNews(scrapedNews));
 
-  useEffect(() => { setMounted(true); }, []);
+  const settings = getSettings();
+
+  useEffect(() => { setMounted(true); applyTheme(); injectAnalytics(); }, []);
+
+  // Ana sayfa SEO etiketleri
+  useEffect(() => {
+    if (location.pathname === '/') {
+      setDocumentSeo({ title: settings.seoTitle, description: settings.seoDescription, image: settings.ogImage });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const [savedNewsIds, setSavedNewsIds] = useState<string[]>(() => {
     try {
@@ -83,14 +93,14 @@ function App() {
         onSearchOpen={() => setSearchOpen(true)}
       />
 
-      <MarketTicker />
+      {settings.showMarketTicker && <MarketTicker />}
 
       {/* 3 Sütunlu Yerleşim: Sol Reklam | İçerik | Sağ Reklam */}
       <div className="site-layout">
 
         {/* Sol Reklam Kolonu */}
         <aside className="site-ad-col site-ad-col--left">
-          <AdZone type="sidebar-tall" />
+          <AdZone type="sidebar-tall" page="home" />
         </aside>
 
         {/* Ana İçerik */}
@@ -127,14 +137,14 @@ function App() {
 
         {/* Sağ Reklam Kolonu */}
         <aside className="site-ad-col site-ad-col--right">
-          <AdZone type="sidebar-tall" />
+          <AdZone type="sidebar-tall" page="home" />
         </aside>
 
       </div>
 
       {/* Alt Tam Genişlik Reklam */}
       <div className="site-bottom-ad">
-        <AdZone type="leaderboard" />
+        <AdZone type="leaderboard" page="home" />
       </div>
 
       <footer className="classic-footer">
@@ -142,7 +152,7 @@ function App() {
           <div>
             <Logo variant="compact" />
             <p style={{ color: 'var(--text-secondary)', marginTop: '20px', fontSize: '14px', lineHeight: 1.8 }}>
-              Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi.
+              {settings.footerText}
             </p>
           </div>
           <div>
@@ -157,7 +167,7 @@ function App() {
           <div>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', marginBottom: '20px', textTransform: 'uppercase' }}>Bize Ulaşın</h4>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '10px' }}>Haber ihbar hatlarımız üzerinden bize ulaşabilirsiniz.</p>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>info@sozmilletin.com</p>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{settings.contactEmail}</p>
           </div>
         </div>
       </footer>

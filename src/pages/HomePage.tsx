@@ -4,6 +4,7 @@ import { NewsCard } from '../components/NewsCard';
 import { BreakingNews } from '../components/BreakingNews';
 import { AdZone } from '../components/AdZone';
 import { WeatherWidget, PrayerTimesWidget, LeagueTableWidget } from '../components/SidebarWidgets';
+import { getSettings } from '../admin/adminStore';
 import type { NewsItem } from '../data/mockData';
 import { Bookmark } from 'lucide-react';
 
@@ -67,7 +68,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <>
-      <BreakingNews newsItems={breakingNews} onNewsClick={openNews} />
+      {getSettings().showBreaking && <BreakingNews newsItems={breakingNews} onNewsClick={openNews} />}
 
       <main className="main-content">
         <AdZone type="leaderboard" className="ad-leaderboard" />
@@ -109,9 +110,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
               </div>
 
-              <WeatherWidget />
-              <PrayerTimesWidget />
-              <LeagueTableWidget />
+              {getSettings().showWeather && <><WeatherWidget /><PrayerTimesWidget /><LeagueTableWidget /></>}
 
               <div style={{ position: 'sticky', top: '90px' }}>
                 <h3 className="section-heading">Öne Çıkanlar</h3>

@@ -30,6 +30,12 @@ export interface NewsItem {
     sad: number;
     fire: number;
   };
+  // Admin/CMS alanları (opsiyonel)
+  publishAt?: number;      // ileri tarihli yayın (timestamp); şimdi < publishAt ise gizli
+  tags?: string[];
+  seoTitle?: string;
+  seoDescription?: string;
+  slug?: string;
 }
 
 export interface AdCampaign {

@@ -1286,3 +1286,57 @@ textarea.admin-input { resize: vertical; line-height: 1.6; }
   .admin-form-row { flex-direction: column; gap: 0; }
   .admin-news-actions { flex-wrap: wrap; }
 }
+
+/* ===== Admin — genişletilmiş CMS öğeleri ===== */
+.admin-h3 { font-family: var(--font-heading); font-size: 16px; margin: 24px 0 12px; color: var(--text-primary); }
+
+/* Gösterge paneli istatistikleri */
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.admin-stat { display: flex; align-items: center; gap: 14px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; }
+.admin-stat-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--accent-red); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.admin-stat-value { font-size: 26px; font-weight: 900; font-family: var(--font-heading); color: var(--text-primary); line-height: 1; }
+.admin-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.admin-quick { margin-bottom: 8px; }
+
+/* Kategori dağılım çubukları */
+.admin-catbars { display: flex; flex-direction: column; gap: 10px; }
+.admin-catbar { display: flex; align-items: center; gap: 12px; }
+.admin-catbar-label { width: 110px; font-size: 13px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
+.admin-catbar-track { flex: 1; height: 10px; background: var(--bg-tertiary); border-radius: 6px; overflow: hidden; }
+.admin-catbar-fill { height: 100%; background: var(--accent-red); border-radius: 6px; }
+.admin-catbar-n { width: 34px; text-align: right; font-size: 13px; font-weight: 700; color: var(--text-muted); }
+
+/* Form ek öğeleri */
+.admin-slug { font-size: 12px; color: var(--text-muted); margin: 2px 0 4px; }
+.admin-fieldset { border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-top: 18px; background: var(--bg-primary); }
+.admin-fieldset-title { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: 13px; color: var(--text-primary); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; }
+.admin-toggles { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 18px; padding: 14px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px; }
+.admin-check.sm { font-size: 13px; font-weight: 500; margin-top: 0; }
+
+/* Liste filtreleri */
+.admin-filters { display: flex; gap: 10px; margin-bottom: 18px; align-items: stretch; }
+.admin-filters .admin-search { margin-bottom: 0; flex: 1; }
+
+/* Reklam kartı başlık + switch + yerleşim */
+.admin-ad-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.admin-switch { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-secondary); }
+.admin-switch input { width: 16px; height: 16px; }
+.admin-placement { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 12px; }
+
+/* Kategori yönetimi */
+.admin-cat-add { display: flex; gap: 10px; margin-bottom: 16px; }
+.admin-cat-add .admin-input { margin-bottom: 0; }
+.admin-cat-list { display: flex; flex-direction: column; gap: 8px; }
+.admin-cat-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; font-weight: 600; }
+.admin-cat-actions { display: flex; gap: 6px; }
+.admin-cat-actions button { width: 30px; height: 30px; border: none; background: var(--bg-tertiary); border-radius: 6px; cursor: pointer; color: var(--text-secondary); font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.admin-cat-actions button:disabled { opacity: .3; cursor: not-allowed; }
+.admin-cat-actions button.danger:hover { background: #dc2626; color: #fff; }
+
+/* Renk seçici */
+.admin-colors { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.admin-color { width: 34px; height: 34px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; }
+.admin-color.on { border-color: var(--text-primary); box-shadow: 0 0 0 2px var(--bg-secondary) inset; }
+.admin-color-input { width: 44px; height: 34px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; background: none; }
+
+.badge.sched { background: rgba(2,132,199,.12); color: var(--accent-blue); }
