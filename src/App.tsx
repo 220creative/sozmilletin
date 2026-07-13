@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
 import { Logo } from './components/Logo';
+import { AdZone } from './components/AdZone';
 import { HomePage } from './pages/HomePage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
 import { mockNews } from './data/mockData';
@@ -65,6 +66,16 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Sol Skin Ad */}
+      <div className="ad-skin ad-skin-left">
+        <AdZone type="sidebar-tall" />
+      </div>
+
+      {/* Sağ Skin Ad */}
+      <div className="ad-skin ad-skin-right">
+        <AdZone type="sidebar-tall" />
+      </div>
+
       <TopBar />
 
       <Header
@@ -77,6 +88,11 @@ function App() {
       />
 
       <MarketTicker />
+
+      {/* Global Üst Reklam */}
+      <div className="global-ad-container">
+        <AdZone type="leaderboard" />
+      </div>
 
       <Routes>
         <Route
@@ -106,6 +122,11 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* Global Alt Reklam */}
+      <div className="global-ad-container">
+        <AdZone type="leaderboard" />
+      </div>
 
       <footer className="classic-footer">
         <div className="classic-footer-inner">

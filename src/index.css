@@ -1142,3 +1142,47 @@ body.dark-mode .breaking-time { color: #f87171; }
 .comment-text { color: var(--text-secondary); line-height: 1.6; font-size: 14px; }
 
 .article-sidebar { display: flex; flex-direction: column; gap: 32px; }
+
+/* 6. Global Ad Placements (Top/Bottom and Skins) */
+.global-ad-container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 16px auto;
+  padding: 0 24px;
+}
+
+.ad-skin {
+  display: none;
+  position: fixed;
+  top: 150px;
+  width: 160px;
+  z-index: 10;
+}
+
+/* 1280px (container) + 160px (ad) + 160px (ad) = 1600px, 
+   so we show it securely on screens > 1640px */
+@media (min-width: 1640px) {
+  .ad-skin {
+    display: block;
+  }
+  .ad-skin-left {
+    left: calc(50% - 640px - 180px); /* Half container - gap - ad width */
+  }
+  .ad-skin-right {
+    right: calc(50% - 640px - 180px);
+  }
+}
+
+/* For slightly smaller wide screens (1440-1640px), we can show thinner ads if wanted, but standard 160px needs space */
+@media (min-width: 1440px) and (max-width: 1639px) {
+  .ad-skin {
+    display: block;
+    width: 120px;
+  }
+  .ad-skin-left {
+    left: 10px;
+  }
+  .ad-skin-right {
+    right: 10px;
+  }
+}
