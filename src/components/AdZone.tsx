@@ -1,6 +1,5 @@
 import React from 'react';
 import { mockAds } from '../data/mockData';
-import { ExternalLink } from 'lucide-react';
 
 interface AdZoneProps {
   type: 'leaderboard' | 'sidebar-rect' | 'sidebar-tall' | 'native';
@@ -8,95 +7,58 @@ interface AdZoneProps {
 }
 
 export const AdZone: React.FC<AdZoneProps> = ({ type, className = '' }) => {
-  // Kampanyayı tipine göre buluyoruz
   const adCampaign = mockAds.find((ad) => ad.type === type);
 
-  if (!adCampaign) {
-    // Reklam bulunamazsa şık bir boş alan tasarımı gösteriyoruz
-    return (
-      <div className={`ad-container ${className}`}>
-        <div className="ad-label">Sponsorlu Alan</div>
-        <div className={`ad-box ${type}`}>
-          <div className="ad-fallback">
-            <span className="ad-fallback-title">SÖZ MİLLETİN REKLAM</span>
-            <span className="ad-fallback-sub">Reklam Vermek İçin Tıklayın</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Reklam boyutları
+  let dims = { w: '', h: '' };
+  if (type === 'leaderboard') dims = { w: '728', h: '90' };
+  else if (type === 'sidebar-rect') dims = { w: '300', h: '250' };
+  else if (type === 'sidebar-tall') dims = { w: '300', h: '600' };
 
   const handleClick = () => {
-    if (adCampaign.destinationUrl && adCampaign.destinationUrl !== '#') {
+    if (adCampaign && adCampaign.destinationUrl && adCampaign.destinationUrl !== '#') {
       window.open(adCampaign.destinationUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
   return (
-    <div className={`ad-container ${className}`}>
-      <div className="ad-label">Sponsorlu İçerik</div>
+    <div className={`ad-container ${className}`} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: type === 'leaderboard' ? '24px' : '0' }}>
+      <span style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Sponsorlu Reklam
+      </span>
       
-      {type === 'native' ? (
-        <div className="ad-box native" onClick={handleClick}>
-          {adCampaign.imageUrl && (
-            <img src={adCampaign.imageUrl} alt={adCampaign.title} className="ad-native-img" />
-          )}
-          <div className="ad-native-content">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="category-badge sponsored" style={{ margin: 0, fontSize: '9px', padding: '2px 6px' }}>SPONSORLU</span>
-              <h4 className="ad-native-title">{adCampaign.title}</h4>
-            </div>
-            <p className="ad-native-desc">{adCampaign.description}</p>
-            {adCampaign.ctaText && (
-              <span className="ad-native-cta">
-                {adCampaign.ctaText} &rarr;
-              </span>
-            )}
+      <div 
+        className={`ad-box ${type}`} 
+        onClick={handleClick}
+        style={{
+          width: '100%',
+          height: type === 'leaderboard' ? '90px' : type === 'sidebar-rect' ? '250px' : type === 'sidebar-tall' ? '600px' : 'auto',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          overflow: 'hidden',
+          position: 'relative',
+          boxShadow: 'var(--shadow-premium)'
+        }}
+      >
+        {adCampaign && adCampaign.imageUrl ? (
+          <img
+            src={adCampaign.imageUrl}
+            alt={adCampaign.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
+          />
+        ) : (
+          <div style={{ textAlign: 'center', color: 'var(--text-muted)', opacity: 0.4 }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px' }}>REKLAM ALANI</div>
+            <div style={{ fontSize: '10px', marginTop: '4px' }}>{dims.w} × {dims.h}</div>
           </div>
-        </div>
-      ) : (
-        <div className={`ad-box ${type}`} onClick={handleClick}>
-          {adCampaign.imageUrl ? (
-            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-              <img
-                src={adCampaign.imageUrl}
-                alt={adCampaign.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                width: '100%',
-                background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)',
-                padding: '10px',
-                color: 'white',
-                textAlign: 'left'
-              }}>
-                <h5 style={{ fontSize: '13px', fontWeight: 800, margin: 0, color: 'white' }}>{adCampaign.title}</h5>
-                {adCampaign.description && (
-                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {adCampaign.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="ad-fallback" style={{ padding: '16px', background: 'linear-gradient(135deg, #1f2937, #111827)', color: 'white', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <span className="ad-fallback-sub" style={{ color: 'var(--accent-gold)' }}>SPONSORLU BAĞLANTI</span>
-              <span className="ad-fallback-title" style={{ fontSize: '16px', fontWeight: 800, margin: '5px 0', color: 'white' }}>{adCampaign.title}</span>
-              {adCampaign.description && (
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px', lineHeight: '1.4' }}>{adCampaign.description}</p>
-              )}
-              {adCampaign.ctaText && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
-                  {adCampaign.ctaText} <ExternalLink size={12} />
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
