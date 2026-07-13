@@ -10,7 +10,7 @@ import { NewsDetailPage } from './pages/NewsDetailPage';
 import { mockNews } from './data/mockData';
 import scrapedNewsData from './data/scrapedNews.json';
 import type { NewsItem } from './data/mockData';
-import { Search, X } from 'lucide-react';
+import { Search, X, TrendingUp } from 'lucide-react';
 
 const scrapedNews = (scrapedNewsData && scrapedNewsData.length > 0)
   ? (scrapedNewsData as NewsItem[])
@@ -66,16 +66,6 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Sol Skin Ad */}
-      <div className="ad-skin ad-skin-left">
-        <AdZone type="sidebar-tall" />
-      </div>
-
-      {/* Sağ Skin Ad */}
-      <div className="ad-skin ad-skin-right">
-        <AdZone type="sidebar-tall" />
-      </div>
-
       <TopBar />
 
       <Header
@@ -89,39 +79,61 @@ function App() {
 
       <MarketTicker />
 
-      {/* Global Üst Reklam */}
+      {/* Global Üst Reklam (Leaderboard) */}
       <div className="global-ad-container">
         <AdZone type="leaderboard" />
       </div>
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <HomePage
-              newsList={newsList}
-              savedNewsIds={savedNewsIds}
-              activeCategory={activeCategory}
-              showSavedOnly={showSavedOnly}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              onView={handleView}
-            />
-          }
-        />
-        <Route
-          path="/haber/:id"
-          element={
-            <NewsDetailPage
-              newsList={newsList}
-              savedNewsIds={savedNewsIds}
-              onToggleSave={handleToggleSave}
-              onView={handleView}
-            />
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      {/* Skin reklamlı ana wrapper */}
+      <div className="page-with-skins">
+        {/* Sol Skin */}
+        <div className="ad-skin ad-skin-left">
+          <div className="ad-skin-box" title="Reklam alanı">
+            <span className="ad-skin-label">Sponsorlu Alan</span>
+            <TrendingUp size={20} style={{ color: 'var(--accent-red)', opacity: 0.4 }} />
+            <span className="ad-skin-placeholder">REKLAM ALANI</span>
+            <span className="ad-skin-label" style={{ marginTop: 'auto' }}>160 × 600</span>
+          </div>
+        </div>
+
+        {/* Sağ Skin */}
+        <div className="ad-skin ad-skin-right">
+          <div className="ad-skin-box" title="Reklam alanı">
+            <span className="ad-skin-label">Sponsorlu Alan</span>
+            <TrendingUp size={20} style={{ color: 'var(--accent-red)', opacity: 0.4 }} />
+            <span className="ad-skin-placeholder">REKLAM ALANI</span>
+            <span className="ad-skin-label" style={{ marginTop: 'auto' }}>160 × 600</span>
+          </div>
+        </div>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                newsList={newsList}
+                savedNewsIds={savedNewsIds}
+                activeCategory={activeCategory}
+                showSavedOnly={showSavedOnly}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onView={handleView}
+              />
+            }
+          />
+          <Route
+            path="/haber/:id"
+            element={
+              <NewsDetailPage
+                newsList={newsList}
+                savedNewsIds={savedNewsIds}
+                onToggleSave={handleToggleSave}
+                onView={handleView}
+              />
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div> {/* /page-with-skins */}
 
       {/* Global Alt Reklam */}
       <div className="global-ad-container">
