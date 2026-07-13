@@ -1143,97 +1143,54 @@ body.dark-mode .breaking-time { color: #f87171; }
 
 .article-sidebar { display: flex; flex-direction: column; gap: 32px; }
 
-/* 6. Global Ad Placements (Top/Bottom Leaderboard & Skins) */
-.global-ad-container {
+/* 6. 3 Sütunlu Site Yerleşimi (Sol Reklam | İçerik | Sağ Reklam) */
+
+/* Tam genişlik wrapper — reklam sütunları + içerik yan yana */
+.site-layout {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* Ana içerik alanı — esnek genişler */
+.site-content {
+  flex: 1;
+  min-width: 0; /* flexbox overflow düzeltmesi */
+}
+
+/* Reklam sütunları — varsayılan gizli, geniş ekranda görünür */
+.site-ad-col {
+  display: none;
+  flex-shrink: 0;
+  width: 160px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Yalnızca 1440px ve üzeri ekranlarda reklam sütunlarını göster */
+@media (min-width: 1440px) {
+  .site-ad-col {
+    display: flex;
+  }
+}
+
+/* Sticky: kaydırınca reklam yerinde kalsın */
+.site-ad-col--left,
+.site-ad-col--right {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow: hidden;
+}
+
+/* Alt Leaderboard Reklam */
+.site-bottom-ad {
   width: 100%;
   max-width: var(--container-max-width);
-  margin: 16px auto;
+  margin: 0 auto 24px;
   padding: 0 24px;
 }
 
-/* === SKIN / GUTTER ADS ===
-   Wrapper that expands beyond the container to hold skin ads.
-   The inner content still stays at max-width, skins go to the sides.
-*/
-.page-with-skins {
-  position: relative;
-  width: 100%;
-}
-
-.ad-skin {
-  display: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 160px;
-  z-index: 8;
-  pointer-events: none;
-}
-
-.ad-skin > * {
-  pointer-events: all;
-  position: sticky;
-  top: 180px;
-}
-
-/* Show skin ads only when there's enough space beside 1280px content */
-@media (min-width: 1660px) {
-  .ad-skin {
-    display: block;
-  }
-  .ad-skin-left {
-    right: calc(100% - (50% - 640px) + 16px);
-    left: auto;
-  }
-  .ad-skin-right {
-    left: calc(100% - (50% - 640px) + 16px);
-    right: auto;
-  }
-}
-
-/* Clean skin ad placeholder box */
-.ad-skin-box {
-  width: 160px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 600px;
-  padding: 16px 8px;
-  gap: 12px;
-  box-shadow: var(--shadow-premium);
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.ad-skin-box:hover {
-  box-shadow: var(--shadow-hover);
-  border-color: var(--border-strong);
-}
-
-.ad-skin-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  width: 100%;
-  text-align: center;
-}
-
-.ad-skin-placeholder {
-  writing-mode: vertical-lr;
-  text-orientation: mixed;
-  font-family: var(--font-heading);
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  opacity: 0.3;
-  user-select: none;
-}

@@ -10,7 +10,7 @@ import { NewsDetailPage } from './pages/NewsDetailPage';
 import { mockNews } from './data/mockData';
 import scrapedNewsData from './data/scrapedNews.json';
 import type { NewsItem } from './data/mockData';
-import { Search, X, TrendingUp } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 const scrapedNews = (scrapedNewsData && scrapedNewsData.length > 0)
   ? (scrapedNewsData as NewsItem[])
@@ -36,7 +36,6 @@ function App() {
     }
   });
 
-  // Görüntülenme sayısını immutable olarak artır
   const handleView = (id: string) => {
     setNewsList(prev => prev.map(n => (n.id === id ? { ...n, views: n.views + 1 } : n)));
   };
@@ -49,13 +48,13 @@ function App() {
     });
   };
 
-  // Header'daki kategori/kaydedilenler tıklamaları her zaman ana sayfaya döner
   const goCategory = (cat: string) => {
     setActiveCategory(cat);
     setShowSavedOnly(false);
     setSearchQuery('');
     navigate('/');
   };
+
   const goSaved = (val: boolean) => {
     setShowSavedOnly(val);
     setSearchQuery('');
@@ -79,64 +78,57 @@ function App() {
 
       <MarketTicker />
 
-      {/* Global Üst Reklam (Leaderboard) */}
-      <div className="global-ad-container">
-        <AdZone type="leaderboard" />
+      {/* 3 Sütunlu Yerleşim: Sol Reklam | İçerik | Sağ Reklam */}
+      <div className="site-layout">
+
+        {/* Sol Reklam Kolonu */}
+        <aside className="site-ad-col site-ad-col--left">
+          <AdZone type="sidebar-rect" />
+          <AdZone type="sidebar-tall" />
+        </aside>
+
+        {/* Ana İçerik */}
+        <div className="site-content">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <HomePage
+                  newsList={newsList}
+                  savedNewsIds={savedNewsIds}
+                  activeCategory={activeCategory}
+                  showSavedOnly={showSavedOnly}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  onView={handleView}
+                />
+              }
+            />
+            <Route
+              path="/haber/:id"
+              element={
+                <NewsDetailPage
+                  newsList={newsList}
+                  savedNewsIds={savedNewsIds}
+                  onToggleSave={handleToggleSave}
+                  onView={handleView}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+
+        {/* Sağ Reklam Kolonu */}
+        <aside className="site-ad-col site-ad-col--right">
+          <AdZone type="sidebar-rect" />
+          <AdZone type="sidebar-tall" />
+        </aside>
+
       </div>
 
-      {/* Skin reklamlı ana wrapper */}
-      <div className="page-with-skins">
-        {/* Sol Skin */}
-        <div className="ad-skin ad-skin-left">
-          <div className="ad-skin-box" title="Reklam alanı">
-            <span className="ad-skin-label">Sponsorlu Alan</span>
-            <TrendingUp size={20} style={{ color: 'var(--accent-red)', opacity: 0.4 }} />
-            <span className="ad-skin-placeholder">REKLAM ALANI</span>
-            <span className="ad-skin-label" style={{ marginTop: 'auto' }}>160 × 600</span>
-          </div>
-        </div>
-
-        {/* Sağ Skin */}
-        <div className="ad-skin ad-skin-right">
-          <div className="ad-skin-box" title="Reklam alanı">
-            <span className="ad-skin-label">Sponsorlu Alan</span>
-            <TrendingUp size={20} style={{ color: 'var(--accent-red)', opacity: 0.4 }} />
-            <span className="ad-skin-placeholder">REKLAM ALANI</span>
-            <span className="ad-skin-label" style={{ marginTop: 'auto' }}>160 × 600</span>
-          </div>
-        </div>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage
-                newsList={newsList}
-                savedNewsIds={savedNewsIds}
-                activeCategory={activeCategory}
-                showSavedOnly={showSavedOnly}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                onView={handleView}
-              />
-            }
-          />
-          <Route
-            path="/haber/:id"
-            element={
-              <NewsDetailPage
-                newsList={newsList}
-                savedNewsIds={savedNewsIds}
-                onToggleSave={handleToggleSave}
-                onView={handleView}
-              />
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div> {/* /page-with-skins */}
-
-      {/* Global Alt Reklam */}
-      <div className="global-ad-container">
+      {/* Alt Tam Genişlik Reklam */}
+      <div className="site-bottom-ad">
         <AdZone type="leaderboard" />
       </div>
 
