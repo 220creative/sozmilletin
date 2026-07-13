@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { NewsCard } from '../components/NewsCard';
 import { BreakingNews } from '../components/BreakingNews';
 import { AdZone } from '../components/AdZone';
+import { WeatherWidget, PrayerTimesWidget, LeagueTableWidget } from '../components/SidebarWidgets';
 import type { NewsItem } from '../data/mockData';
 import { Bookmark } from 'lucide-react';
 
@@ -97,6 +98,9 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div className="sidebar-column">
+              <WeatherWidget />
+              <LeagueTableWidget />
+              <PrayerTimesWidget />
               <AdZone type="sidebar-rect" />
 
               <div>
