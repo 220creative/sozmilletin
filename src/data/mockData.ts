@@ -56,7 +56,8 @@ export const CATEGORIES = [
   'Siyaset',
   'Magazin',
   'Asayiş',
-  'Spor'
+  'Spor',
+  'Ekonomi'
 ];
 
 export const mockNews: NewsItem[] = [

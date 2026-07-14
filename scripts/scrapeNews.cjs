@@ -33,7 +33,13 @@ const FEEDS = [
   { name: 'Haberler.com Gebze', url: 'https://rss.haberler.com/rss.asp?ilce=gebze', maxItems: 25 },
   { name: 'Mynet', url: 'https://www.mynet.com/haber/rss/sondakika', maxItems: 15 },
   { name: 'A Spor', url: 'https://www.aspor.com.tr/rss/anasayfa.xml', maxItems: 15 },
-  { name: 'Fotomaç', url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', maxItems: 15 }
+  { name: 'Fotomaç', url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', maxItems: 15 },
+  { name: 'Ensonhaber Magazin', url: 'https://www.ensonhaber.com/rss/magazin.xml', maxItems: 20 },
+  { name: 'Haberler.com Magazin', url: 'https://rss.haberler.com/rss.asp?kategori=magazin', maxItems: 20 },
+  { name: 'Habertürk Magazin', url: 'https://www.haberturk.com/rss/magazin.xml', maxItems: 20 },
+  { name: 'Ensonhaber Ekonomi', url: 'https://www.ensonhaber.com/rss/ekonomi.xml', maxItems: 20 },
+  { name: 'Haberler.com Ekonomi', url: 'https://rss.haberler.com/rss.asp?kategori=ekonomi', maxItems: 20 },
+  { name: 'Habertürk Ekonomi', url: 'https://www.haberturk.com/rss/ekonomi.xml', maxItems: 20 }
 ];
 
 const OUTPUT_FILE = path.join(__dirname, '../src/data/scrapedNews.json');
@@ -46,7 +52,8 @@ const CATEGORY_KEYWORDS = {
   Siyaset: ['siyaset', 'politika', 'meclis', 'belediye', 'ak parti', 'akp', 'chp', 'mhp', 'seçim', 'aday', 'başkan', 'bakan', 'vali', 'kaymakam', 'parti', 'imar'],
   Asayiş: ['asayiş', 'polis', 'kaza', 'yangın', 'cinayet', 'hırsızlık', 'gözaltı', 'adliye', 'jandarma', 'baskın', 'tutuklama', 'operasyon', 'narkotik', 'öldü', 'yaralı'],
   Spor: ['spor', 'futbol', 'kocaelispor', 'gebzespor', 'darıcaspor', 'maç', 'gol', 'lig', 'transfer', 'basketbol', 'voleybol', 'stad', 'antrenman'],
-  Magazin: ['magazin', 'ünlüler', 'sanat', 'konser', 'etkinlik', 'sinema', 'tiyatro', 'oyuncu', 'dizi', 'şarkıcı', 'festival', 'sergi']
+  Ekonomi: ['ekonomi', 'döviz', 'altın', 'dolar', 'euro', 'borsa', 'faiz', 'merkez bankası', 'enflasyon', 'zam', 'fiyat', 'piyasa', 'ihracat', 'ithalat', 'şirket', 'kredi'],
+  Magazin: ['magazin', 'ünlüler', 'sanat', 'konser', 'etkinlik', 'sinema', 'tiyatro', 'oyuncu', 'dizi', 'şarkıcı', 'festival', 'sergi', 'aşk', 'evlilik', 'boşanma']
 };
 
 // Kategori belirleme mantığı
@@ -59,6 +66,11 @@ function determineCategory(item) {
     if (c && typeof c === 'object' && c.name) return c.name.toLowerCase();
     return '';
   }).filter(Boolean);
+
+  // Hassas konuları koruma altına al
+  if (title.includes('15 temmuz') || summary.includes('15 temmuz') || title.includes('şehit')) {
+    return 'Gündem';
+  }
 
   for (const cat of feedCategories) {
     for (const [key, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
