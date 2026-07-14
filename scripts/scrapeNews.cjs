@@ -21,17 +21,19 @@ const parser = new Parser({
 });
 
 const FEEDS = [
-  { name: 'Özgür Kocaeli', url: 'https://www.ozgurkocaeli.com.tr/rss' },
-  { name: 'Çağdaş Kocaeli', url: 'https://www.cagdaskocaeli.com.tr/rss' },
-  { name: 'Kocaeli Gazetesi', url: 'https://www.kocaeligazetesi.com.tr/rss' },
-  { name: 'Darıca Gazetesi', url: 'https://www.daricagazetesi.com.tr/rss' },
-  { name: 'Gebze Hürses', url: 'https://www.gebzehurses.com/rss.xml' },
-  { name: 'Hürriyet', url: 'https://www.hurriyet.com.tr/rss/gundem' },
-  { name: 'Ensonhaber', url: 'https://www.ensonhaber.com/rss/ensonhaber.xml' },
-  { name: 'Haberler.com', url: 'http://rss.haberler.com/rss.asp' },
-  { name: 'Haberler.com Darıca', url: 'https://rss.haberler.com/rss.asp?ilce=darica' },
-  { name: 'Haberler.com Gebze', url: 'https://rss.haberler.com/rss.asp?ilce=gebze' },
-  { name: 'Mynet', url: 'https://www.mynet.com/haber/rss/sondakika' }
+  { name: 'Özgür Kocaeli', url: 'https://www.ozgurkocaeli.com.tr/rss', maxItems: 30 },
+  { name: 'Çağdaş Kocaeli', url: 'https://www.cagdaskocaeli.com.tr/rss', maxItems: 30 },
+  { name: 'Kocaeli Gazetesi', url: 'https://www.kocaeligazetesi.com.tr/rss', maxItems: 30 },
+  { name: 'Darıca Gazetesi', url: 'https://www.daricagazetesi.com.tr/rss', maxItems: 30 },
+  { name: 'Gebze Hürses', url: 'https://www.gebzehurses.com/rss.xml', maxItems: 30 },
+  { name: 'Hürriyet', url: 'https://www.hurriyet.com.tr/rss/gundem', maxItems: 15 },
+  { name: 'Ensonhaber', url: 'https://www.ensonhaber.com/rss/ensonhaber.xml', maxItems: 15 },
+  { name: 'Haberler.com', url: 'http://rss.haberler.com/rss.asp', maxItems: 15 },
+  { name: 'Haberler.com Darıca', url: 'https://rss.haberler.com/rss.asp?ilce=darica', maxItems: 25 },
+  { name: 'Haberler.com Gebze', url: 'https://rss.haberler.com/rss.asp?ilce=gebze', maxItems: 25 },
+  { name: 'Mynet', url: 'https://www.mynet.com/haber/rss/sondakika', maxItems: 15 },
+  { name: 'A Spor', url: 'https://www.aspor.com.tr/rss/anasayfa.xml', maxItems: 15 },
+  { name: 'Fotomaç', url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', maxItems: 15 }
 ];
 
 const OUTPUT_FILE = path.join(__dirname, '../src/data/scrapedNews.json');
@@ -234,9 +236,10 @@ async function scrapeAll() {
     try {
       console.log(`${feedSource.name} taranıyor...`);
       const feed = await parser.parseURL(feedSource.url);
-      console.log(`-> ${feedSource.name} kaynağından ${feed.items.length} haber okundu.`);
+      const itemsToProcess = feedSource.maxItems ? feed.items.slice(0, feedSource.maxItems) : feed.items;
+      console.log(`-> ${feedSource.name} kaynağından ${feed.items.length} haber okundu, ${itemsToProcess.length} kadarı işlenecek.`);
 
-      feed.items.forEach(item => {
+      itemsToProcess.forEach(item => {
         const trMap = { 'ç':'c', 'ğ':'g', 'ı':'i', 'i':'i', 'ö':'o', 'ş':'s', 'ü':'u' };
         const baseSlug = (item.title || 'haber').toLowerCase().replace(/[çğıiöşü]/g, m => trMap[m]).replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '').substring(0, 70);
         const shortHash = crypto.createHash('md5').update(item.link || item.title || '').digest('hex').substring(0, 6);
@@ -259,6 +262,7 @@ async function scrapeAll() {
 
         allScrapedNews.push({
           id,
+          source: feedSource.name,
           link: item.link || '',
           title: decodeEntities(item.title),
           summary: summary || item.title,
@@ -302,7 +306,23 @@ async function scrapeAll() {
   const finalNewsList = Array.from(newsMap.values());
   finalNewsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-  const candidates = finalNewsList.slice(0, 200);
+  const sourceCounts = {};
+  const uniqueTitles = new Set();
+  const candidates = [];
+  for (const item of finalNewsList) {
+    if (uniqueTitles.has(item.title)) continue;
+    uniqueTitles.add(item.title);
+
+    const src = item.source || item.author.name;
+    const feedDef = FEEDS.find(f => f.name === src || (item.source && f.name === item.source));
+    const limit = feedDef ? feedDef.maxItems : 20;
+
+    sourceCounts[src] = sourceCounts[src] || 0;
+    if (sourceCounts[src] < limit) {
+      candidates.push(item);
+      sourceCounts[src]++;
+    }
+  }
 
   // Makale sayfasından tam metin + gerçek görsel çek.
   // Sadece içeriği zayıf ya da görseli eksik olanları zenginleştir (zaten
