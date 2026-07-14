@@ -5,7 +5,7 @@ import { getMergedNews, getSettings, applyTheme, injectAnalytics } from './admin
 import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
-import { Logo } from './components/Logo';
+import { Footer } from './components/Footer';
 import { AdZone } from './components/AdZone';
 import { HomePage } from './pages/HomePage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
@@ -141,30 +141,7 @@ function App() {
         <AdZone type="leaderboard" page="home" />
       </div>
 
-      <footer className="classic-footer">
-        <div className="classic-footer-inner">
-          <div>
-            <Logo variant="compact" />
-            <p style={{ color: 'var(--text-secondary)', marginTop: '20px', fontSize: '14px', lineHeight: 1.8 }}>
-              {settings.footerText}
-            </p>
-          </div>
-          <div>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', marginBottom: '20px', textTransform: 'uppercase' }}>Kurumsal</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px' }}>
-              <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Hakkımızda</a>
-              <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Künye</a>
-              <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Gizlilik İlkeleri</a>
-              <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>İletişim</a>
-            </div>
-          </div>
-          <div>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', marginBottom: '20px', textTransform: 'uppercase' }}>Bize Ulaşın</h4>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '10px' }}>Haber ihbar hatlarımız üzerinden bize ulaşabilirsiniz.</p>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{settings.contactEmail}</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {searchOpen && (
         <div className="modal-overlay" onClick={() => setSearchOpen(false)}>
