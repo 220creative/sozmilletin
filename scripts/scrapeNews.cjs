@@ -237,7 +237,10 @@ async function scrapeAll() {
       console.log(`-> ${feedSource.name} kaynağından ${feed.items.length} haber okundu.`);
 
       feed.items.forEach(item => {
-        const id = 'scraped-' + crypto.createHash('md5').update(item.link || item.title || '').digest('hex');
+        const trMap = { 'ç':'c', 'ğ':'g', 'ı':'i', 'i':'i', 'ö':'o', 'ş':'s', 'ü':'u' };
+        const baseSlug = (item.title || 'haber').toLowerCase().replace(/[çğıiöşü]/g, m => trMap[m]).replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '').substring(0, 70);
+        const shortHash = crypto.createHash('md5').update(item.link || item.title || '').digest('hex').substring(0, 6);
+        const id = `${baseSlug}-${shortHash}`;
         const category = determineCategory(item);
         const image = extractImageFromItem(item); // yoksa null
 
