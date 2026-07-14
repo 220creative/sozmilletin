@@ -274,14 +274,41 @@ export async function publish(): Promise<{ ok: boolean; msg: string }> {
     if (g.status === 401) return { ok: false, msg: 'Anahtar geçersiz veya süresi dolmuş.' };
     if (g.ok) sha = (await g.json()).sha;
 
-    // Dosyayı güncelle (commit)
-    const content = utf8ToBase64(JSON.stringify(payload, null, 2));
-    const p = await fetch(api, {
-      method: 'PUT', headers,
-      body: JSON.stringify({ message: 'admin: icerik yayinlandi', content, sha, branch: 'main' }),
-    });
+    // Dosyayı güncelle (commit) yapacak yardımcı fonksiyon
+    const tryPublish = async (currentSha?: string) => {
+      const p = await fetch(api, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ message: 'admin: icerik yayinlandi', content: utf8ToBase64(JSON.stringify(payload, null, 2)), sha: currentSha, branch: 'main' }),
+      });
+      return p;
+    };
+
+    let p = await tryPublish(sha);
+
+    // Eğer 409 Conflict dönerse, GitHub Cache nedeniyle eski SHA alınmış demektir.
+    // Commit geçmişinden en güncel SHA'yı zorla çekip tekrar deneriz.
+    if (p.status === 409) {
+      const commitRes = await fetch(`https://api.github.com/repos/${REPO}/commits?path=src/data/adminData.json&per_page=1&t=${Date.now()}`, { headers: { ...headers, 'If-None-Match': '' }, cache: 'no-store' });
+      if (commitRes.ok) {
+        const commits = await commitRes.json();
+        if (commits && commits.length > 0) {
+          const treeRes = await fetch(commits[0].commit.tree.url, { headers });
+          if (treeRes.ok) {
+            const treeData = await treeRes.json();
+            const fileObj = treeData.tree.find((item: any) => item.path === 'src/data/adminData.json' || item.path === 'adminData.json' || item.path === 'data/adminData.json');
+            if (fileObj && fileObj.sha) {
+               p = await tryPublish(fileObj.sha);
+            } else {
+               const fallbackG = await fetch(`${api}?ref=main&timestamp=${Date.now()}`, { headers: { ...headers, 'If-None-Match': '' }, cache: 'no-store' });
+               if (fallbackG.ok) p = await tryPublish((await fallbackG.json()).sha);
+            }
+          }
+        }
+      }
+    }
+
     if (p.status === 403) return { ok: false, msg: 'Yetki yok — anahtar "Contents: Read and write" iznine sahip olmalı.' };
-    if (!p.ok) return { ok: false, msg: `Kaydetme hatası (${p.status}).` };
+    if (!p.ok) return { ok: false, msg: `Kaydetme hatası (${p.status}). Tarayıcı önbelleğini (CTRL+F5) temizleyip tekrar deneyin.` };
 
     // Deploy workflow'unu tetikle
     const d = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/natro-deploy.yml/dispatches`, {
