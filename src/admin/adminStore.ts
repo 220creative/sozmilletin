@@ -270,7 +270,7 @@ export async function publish(): Promise<{ ok: boolean; msg: string }> {
   try {
     // Mevcut dosyanın SHA'sını al
     let sha: string | undefined;
-    const g = await fetch(`${api}?ref=main`, { headers });
+    const g = await fetch(`${api}?ref=main&t=${Date.now()}`, { headers, cache: 'no-store' });
     if (g.status === 401) return { ok: false, msg: 'Anahtar geçersiz veya süresi dolmuş.' };
     if (g.ok) sha = (await g.json()).sha;
 
