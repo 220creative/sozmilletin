@@ -4,7 +4,96 @@
   "hidden": [],
   "heroId": null,
   "pinned": [],
-  "ads": null,
-  "settings": {},
-  "categories": null
+  "ads": [
+    {
+      "id": "leaderboard",
+      "type": "leaderboard",
+      "label": "Üst / Alt Banner (728x90)",
+      "enabled": true,
+      "mode": "image",
+      "title": "YILDIZ PROMOSYON",
+      "description": "Tüm Kurumsal ve Bireysel Promosyon Ürünlerinde Yaz Sezonuna Özel %30 İndirim Fırsatını Kaçırmayın! Tıklayın ve Katalogu İnceleyin.",
+      "imageUrl": "",
+      "destinationUrl": "https://yildizpromosyon.com.tr",
+      "ctaText": "Fırsatı Yakala",
+      "code": "",
+      "showOnHome": true,
+      "showOnArticle": true
+    },
+    {
+      "id": "sidebar-rect",
+      "type": "sidebar-rect",
+      "label": "Kenar Kare (300x250)",
+      "enabled": true,
+      "mode": "image",
+      "title": "220 Creative Digital Agency",
+      "description": "Profesyonel Web Tasarım, SEO ve Sosyal Medya Yönetimi ile İşinizi Dijital Dünyada Zirveye Taşıyın!",
+      "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=300",
+      "destinationUrl": "https://220creative.com.tr",
+      "ctaText": "",
+      "code": "",
+      "showOnHome": true,
+      "showOnArticle": true
+    },
+    {
+      "id": "sidebar-tall",
+      "type": "sidebar-tall",
+      "label": "Kenar Uzun (300x600)",
+      "enabled": true,
+      "mode": "image",
+      "title": "Söz Milletin Premium Katılım",
+      "description": "Haberlerinizi ve taleplerinizi editörlerimizin incelemesine doğrudan sunmak, öncelikli yayın hakkı kazanmak ve reklamsız deneyim yaşamak için Premium üye olun. Halkın sesi bağımsız kalsın!",
+      "imageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=300",
+      "destinationUrl": "#",
+      "ctaText": "",
+      "code": "",
+      "showOnHome": true,
+      "showOnArticle": true
+    },
+    {
+      "id": "native",
+      "type": "native",
+      "label": "Sponsorlu İçerik",
+      "enabled": true,
+      "mode": "image",
+      "title": "Modern İş Dünyasında Tanıtımın Gücü: Promosyon Ürünlerinin Satışa Etkisi Nedir?",
+      "description": "Yıldız Promosyon sponsorluğunda hazırlanan bu makalede, markaların müşteri sadakatini artırmak için kullandığı promosyonel stratejilerin geri dönüş oranları analiz ediliyor.",
+      "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=200",
+      "destinationUrl": "https://yildizpromosyon.com.tr",
+      "ctaText": "Daha Fazla Bilgi Al",
+      "code": "",
+      "showOnHome": true,
+      "showOnArticle": true
+    }
+  ],
+  "settings": {
+    "siteName": "SÖZ MİLLETİN",
+    "slogan": "MEDYA HABER",
+    "contactEmail": "info@sozmilletin.com",
+    "footerText": "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi.",
+    "accentColor": "#b91c1c",
+    "social": {
+      "facebook": "",
+      "twitter": "",
+      "instagram": "",
+      "youtube": ""
+    },
+    "showMarketTicker": true,
+    "showBreaking": true,
+    "showWeather": true,
+    "seoTitle": "SÖZ MİLLETİN — Son Dakika Haberler, Kocaeli ve Türkiye Gündemi",
+    "seoDescription": "Kocaeli ve Türkiye gündeminden son dakika haberleri, siyaset, spor, asayiş ve magazin. Bağımsız ve tarafsız habercilik.",
+    "seoKeywords": "haber, son dakika, kocaeli, gündem, siyaset, spor, asayiş",
+    "ogImage": "/haber-placeholder.svg",
+    "gaId": ""
+  },
+  "categories": [
+    "Tümü",
+    "Kocaeli",
+    "Spor Kocaeli",
+    "Siyaset",
+    "Magazin",
+    "Asayiş",
+    "Spor"
+  ]
 }
