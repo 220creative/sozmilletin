@@ -66,6 +66,7 @@ export interface SiteSettings {
   seoKeywords: string;
   ogImage: string;
   gaId: string;
+  geminiApiKey: string;
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -83,6 +84,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   seoKeywords: 'haber, son dakika, kocaeli, gündem, siyaset, spor, asayiş',
   ogImage: '/haber-placeholder.svg',
   gaId: '',
+  geminiApiKey: '',
 };
 
 export function getSettings(): SiteSettings {

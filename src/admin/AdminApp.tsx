@@ -7,13 +7,13 @@ import type { AdSlot, SiteSettings } from './adminStore';
 import {
   Lock, LogOut, Plus, Search, Pencil, Trash2, Eye, EyeOff, Star, Pin, Newspaper,
   Megaphone, Settings, ArrowLeft, Save, Home, LayoutDashboard, Tag, Palette,
-  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, Calendar, UploadCloud, Menu, X
+  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, UploadCloud, Menu, X, Bot, Sparkles
 } from 'lucide-react';
 
 const BASE_NEWS: NewsItem[] = (scrapedNewsData && (scrapedNewsData as NewsItem[]).length > 0)
   ? (scrapedNewsData as NewsItem[]) : mockNews;
 
-type View = 'dash' | 'list' | 'form' | 'ads' | 'cats' | 'seo' | 'look' | 'backup' | 'publish';
+type View = 'dash' | 'list' | 'form' | 'ads' | 'cats' | 'seo' | 'look' | 'backup' | 'publish' | 'ai';
 
 const toLocalInput = (ts?: number) => {
   if (!ts) return '';
@@ -57,6 +57,7 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
   const [publishAt, setPublishAt] = useState(toLocalInput(editing?.publishAt));
   const [seoTitle, setSeoTitle] = useState(editing?.seoTitle || '');
   const [seoDesc, setSeoDesc] = useState(editing?.seoDescription || '');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
   const cats = store.getCategories().filter(c => c !== 'Tümü');
 
   const save = (e: React.FormEvent) => {
@@ -98,10 +99,38 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
       {title && <div className="admin-slug">Bağlantı: /haber/... · <b>{store.slugify(title)}</b></div>}
 
       <label className="admin-label">Özet</label>
-      <textarea className="admin-input" rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Boş bırakılırsa ilk paragraf kullanılır" />
+      <textarea className="admin-input" rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Boş bırakılırsa ilk paragraf kullanılır" disabled={isAiGenerating} />
 
-      <label className="admin-label">İçerik * <span className="admin-muted">(paragrafları boş satırla ayırın)</span></label>
-      <textarea className="admin-input" rows={9} value={body} onChange={(e) => setBody(e.target.value)} placeholder={'Birinci paragraf...\n\nİkinci paragraf...'} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '14px 0 6px' }}>
+        <label className="admin-label" style={{ margin: 0 }}>İçerik * <span className="admin-muted">(paragrafları boş satırla ayırın)</span></label>
+        {store.getSettings().geminiApiKey && (
+          <button type="button" className="admin-btn-ai" onClick={async () => {
+            if (!body.trim()) return alert('Yapay zeka için önce kısa bir taslak/metin girmelisiniz!');
+            setIsAiGenerating(true);
+            try {
+              const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${store.getSettings().geminiApiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: "Aşağıdaki metni/notu, tarafsız, kurallara uygun, profesyonel bir haber ajansı diliyle, akıcı ve uzun bir haber metni haline getir. Sadece oluşturduğun haber metnini döndür, başına veya sonuna herhangi bir yorum veya başlık ekleme:\n\n" + body }] }]
+                })
+              });
+              const data = await res.json();
+              if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                setBody(data.candidates[0].content.parts[0].text.trim());
+              } else {
+                alert('Yapay zeka yanıt oluşturamadı.');
+              }
+            } catch (e) {
+              alert('Yapay zeka bağlantı hatası.');
+            }
+            setIsAiGenerating(false);
+          }}>
+            <Sparkles size={14} /> {isAiGenerating ? 'Yazılıyor...' : 'Yapay Zeka ile Profesyonelleştir'}
+          </button>
+        )}
+      </div>
+      <textarea className="admin-input" rows={12} value={body} onChange={(e) => setBody(e.target.value)} placeholder={'Birinci paragraf...\n\nİkinci paragraf...'} disabled={isAiGenerating} />
 
       <div className="admin-form-row">
         <div style={{ flex: 1 }}>
@@ -472,6 +501,30 @@ const PublishPanel: React.FC = () => {
   );
 };
 
+/* ================= Yapay Zeka Ayarları ================= */
+const AiSettings: React.FC = () => {
+  const [key, setKey] = useState(store.getSettings().geminiApiKey);
+  const [ok, setOk] = useState(false);
+  const save = () => { store.saveSettings({ geminiApiKey: key }); setOk(true); setTimeout(() => setOk(false), 3000); };
+  return (
+    <div>
+      <div className="admin-section-head"><h2>Yapay Zeka Ayarları</h2><button className="admin-btn-primary" onClick={save}><Save size={16} /> Kaydet</button></div>
+      <p className="admin-muted" style={{ marginBottom: 16 }}>Haber eklerken kısa notları profesyonel bir haber metnine dönüştürecek Gemini asistanını aktifleştirin.</p>
+      {ok && <div className="admin-ok">API Anahtarı kaydedildi. Yapay zeka asistanı artık aktif!</div>}
+      
+      <div className="admin-fieldset">
+        <div className="admin-fieldset-title"><Bot size={14} /> Google Gemini API Anahtarı</div>
+        <label className="admin-label">API Anahtarı (Key)</label>
+        <input className="admin-input" type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="AIzaSy..." />
+        <p className="admin-hint" style={{ marginTop: 8, lineHeight: 1.5 }}>
+          Bu anahtar sunucuya gönderilmez, yalnızca tarayıcınızda (localStorage) saklanır. 
+          Ücretsiz bir anahtar almak için <b>Google AI Studio</b> sayfasına gidip "Get API key" butonuna tıklayarak saniyeler içinde oluşturabilirsiniz.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 /* ================= Gösterge Paneli ================= */
 const Dashboard: React.FC<{ go: (v: View, edit?: NewsItem | null) => void }> = ({ go }) => {
   const all = store.getMergedNews(BASE_NEWS, { includeScheduled: true });
@@ -482,26 +535,77 @@ const Dashboard: React.FC<{ go: (v: View, edit?: NewsItem | null) => void }> = (
   const byCat: Record<string, number> = {};
   all.forEach(n => { byCat[n.category] = (byCat[n.category] || 0) + 1; });
   const cards = [
-    { label: 'Toplam Haber', value: all.length, icon: Newspaper },
-    { label: 'Elle Eklenen', value: manual, icon: Plus },
-    { label: 'Gizli', value: hidden, icon: EyeOff },
-    { label: 'Öne Çıkan', value: pinned, icon: Pin },
-    { label: 'Zamanlanmış', value: scheduled, icon: Calendar },
+    { label: 'Toplam Haber', value: all.length, icon: Newspaper, color: '#3b82f6' },
+    { label: 'Elle Eklenen', value: manual, icon: Plus, color: '#10b981' },
+    { label: 'Öne Çıkan', value: pinned, icon: Pin, color: '#f59e0b' },
+    { label: 'Gizli/Zamanlı', value: hidden + scheduled, icon: Clock, color: '#6366f1' },
   ];
+  
+  const recent = all.slice(0, 4);
+
   return (
-    <div>
-      <h2 style={{ marginBottom: 20 }}>Gösterge Paneli</h2>
-      <div className="admin-stats">
-        {cards.map(c => { const I = c.icon; return (
-          <div key={c.label} className="admin-stat"><div className="admin-stat-icon"><I size={18} /></div><div><div className="admin-stat-value">{c.value}</div><div className="admin-stat-label">{c.label}</div></div></div>
-        ); })}
+    <div className="admin-dashboard">
+      {/* Welcome Card */}
+      <div className="admin-welcome-card">
+        <div className="admin-welcome-content">
+          <h2 style={{ color: '#fff', fontSize: '28px', marginBottom: '8px', letterSpacing: '-0.5px' }}>Hoş Geldin, Editör! 👋</h2>
+          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.5, maxWidth: '500px' }}>
+            Bugün harika görünüyorsun. Sistemde toplam <b>{all.length}</b> haber var ve her şey sorunsuz çalışıyor. Yeni bir haber eklemek veya mevcutları düzenlemek için hazırsan başlayalım.
+          </p>
+          <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+            <button className="admin-btn-primary" onClick={() => go('form', null)} style={{ background: '#fff', color: 'var(--accent-red)' }}><Plus size={16} /> Hızlı Haber Ekle</button>
+            <button className="admin-btn-ghost" onClick={() => go('list')} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff' }}><Newspaper size={16} /> Tümüne Bak</button>
+          </div>
+        </div>
+        <div className="admin-welcome-bg" />
       </div>
-      <div className="admin-quick"><button className="admin-btn-primary" onClick={() => go('form', null)}><Plus size={16} /> Yeni Haber Ekle</button></div>
-      <h3 className="admin-h3">Kategori Dağılımı</h3>
-      <div className="admin-catbars">
-        {Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([cat, n]) => (
-          <div key={cat} className="admin-catbar"><span className="admin-catbar-label">{cat}</span><div className="admin-catbar-track"><div className="admin-catbar-fill" style={{ width: `${(n / all.length) * 100}%` }} /></div><span className="admin-catbar-n">{n}</span></div>
-        ))}
+
+      <div className="admin-dashboard-grid">
+        <div className="admin-dash-main">
+          {/* Stats */}
+          <div className="admin-stats-modern">
+            {cards.map(c => { const I = c.icon; return (
+              <div key={c.label} className="admin-stat-modern">
+                <div className="admin-stat-icon-m" style={{ backgroundColor: `${c.color}15`, color: c.color }}><I size={22} /></div>
+                <div>
+                  <div className="admin-stat-value-m">{c.value}</div>
+                  <div className="admin-stat-label-m">{c.label}</div>
+                </div>
+              </div>
+            ); })}
+          </div>
+
+          {/* Recent News */}
+          <h3 className="admin-h3" style={{ marginTop: '32px' }}>Son Eklenenler</h3>
+          <div className="admin-recent-list">
+            {recent.map(n => (
+              <div key={n.id} className="admin-recent-row">
+                <img src={n.image} alt="" className="admin-recent-thumb" onError={(e) => (e.currentTarget.src = '/haber-placeholder.svg')} />
+                <div className="admin-recent-info">
+                  <div className="admin-recent-title">{n.title}</div>
+                  <div className="admin-recent-meta"><span className="badge cat">{n.category}</span> • {new Date(n.date).toLocaleDateString('tr-TR')}</div>
+                </div>
+                <button className="icon-btn" onClick={() => go('form', n)} title="Düzenle"><Pencil size={16} /></button>
+              </div>
+            ))}
+            <button className="admin-btn-ghost" style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }} onClick={() => go('list')}>Tüm Haberleri Gör →</button>
+          </div>
+        </div>
+
+        <div className="admin-dash-side">
+          <div className="admin-ad-card" style={{ margin: 0, height: '100%' }}>
+            <h3 className="admin-h3" style={{ margin: '0 0 16px 0' }}>Kategori Dağılımı</h3>
+            <div className="admin-catbars">
+              {Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([cat, n]) => (
+                <div key={cat} className="admin-catbar">
+                  <span className="admin-catbar-label">{cat}</span>
+                  <div className="admin-catbar-track"><div className="admin-catbar-fill" style={{ width: `${(n / all.length) * 100}%` }} /></div>
+                  <span className="admin-catbar-n">{n}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -531,9 +635,10 @@ export const AdminApp: React.FC = () => {
   const go = (v: View, edit: NewsItem | null = null) => { setEditing(edit); setView(v); setIsMobileMenuOpen(false); };
   const afterForm = () => { setView('list'); refresh(); };
 
-  const nav: { v: View; label: string; icon: React.ElementType }[] = [
+  const nav = [
     { v: 'dash', label: 'Panel', icon: LayoutDashboard },
     { v: 'list', label: 'Haberler', icon: Newspaper },
+    { v: 'ai', label: 'Yapay Zeka', icon: Bot },
     { v: 'ads', label: 'Reklamlar', icon: Megaphone },
     { v: 'cats', label: 'Kategoriler', icon: Tag },
     { v: 'seo', label: 'SEO & Site', icon: SeoIcon },
@@ -563,7 +668,7 @@ export const AdminApp: React.FC = () => {
         <nav>
           <button className="hl" onClick={() => go('form', null)}><Plus size={17} /> <span>Yeni Haber</span></button>
           {nav.map(n => { const I = n.icon; return (
-            <button key={n.v} className={view === n.v ? 'active' : ''} onClick={() => go(n.v)}><I size={17} /> <span>{n.label}</span></button>
+            <button key={n.v} className={view === n.v ? 'active' : ''} onClick={() => go(n.v as View)}><I size={17} /> <span>{n.label}</span></button>
           ); })}
         </nav>
         <div className="admin-sidebar-bottom">
@@ -577,6 +682,7 @@ export const AdminApp: React.FC = () => {
         {view === 'publish' && <PublishPanel />}
         {view === 'form' && <NewsForm editing={editing} onDone={afterForm} onCancel={() => setView('list')} />}
         {view === 'ads' && <AdsManager />}
+        {view === 'ai' && <AiSettings />}
         {view === 'cats' && <CategoryManager />}
         {view === 'seo' && <SeoSettings />}
         {view === 'look' && <LookSettings />}

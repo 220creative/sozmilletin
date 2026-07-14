@@ -1463,3 +1463,33 @@ textarea.admin-input { resize: vertical; line-height: 1.6; }
   background-size: 14px 14px;
 }
 .admin-preview-off { margin-top: 10px; font-size: 12px; color: var(--accent-red); font-weight: 600; text-align: center; }
+
+/* ===== Yapay Zeka (AI) Butonu ===== */
+.admin-btn-ai { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .3s ease; background-size: 200% 200%; animation: gradientBG 4s ease infinite; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
+.admin-btn-ai:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); }
+.admin-btn-ai:disabled { opacity: 0.7; cursor: not-allowed; animation: none; transform: none; box-shadow: none; }
+@keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* ===== Modern Dashboard CSS ===== */
+.admin-dashboard { display: flex; flex-direction: column; gap: 24px; }
+.admin-welcome-card { position: relative; background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca); border-radius: 16px; padding: 32px; overflow: hidden; box-shadow: 0 10px 25px rgba(49, 46, 129, 0.2); }
+.admin-welcome-content { position: relative; z-index: 2; }
+.admin-welcome-bg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 50%); z-index: 1; }
+
+.admin-dashboard-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+@media (max-width: 1024px) { .admin-dashboard-grid { grid-template-columns: 1fr; } }
+
+.admin-stats-modern { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.admin-stat-modern { display: flex; align-items: center; gap: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s; }
+.admin-stat-modern:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+.admin-stat-icon-m { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.admin-stat-value-m { font-size: 28px; font-weight: 800; font-family: var(--font-heading); color: var(--text-primary); line-height: 1.1; margin-bottom: 4px; }
+.admin-stat-label-m { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+.admin-recent-list { display: flex; flex-direction: column; gap: 12px; }
+.admin-recent-row { display: flex; align-items: center; gap: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; transition: background 0.2s; }
+.admin-recent-row:hover { background: var(--bg-tertiary); }
+.admin-recent-thumb { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; }
+.admin-recent-info { flex: 1; min-width: 0; }
+.admin-recent-title { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+.admin-recent-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
