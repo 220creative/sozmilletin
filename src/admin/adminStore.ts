@@ -1,5 +1,12 @@
 import type { NewsItem } from '../data/mockData';
 import { mockAds, CATEGORIES } from '../data/mockData';
+import adminData from '../data/adminData.json';
+
+// Yayınlanan admin verisi (build'e gömülü). Ziyaretçiler bunu görür;
+// editörün localStorage'ı varsa onun üstüne biner (taslak).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const PUB = adminData as any;
+const REPO = '220creative/sozmilletin';
 
 // Admin paneli tüm değişiklikleri tarayıcının localStorage'ında saklar (backend yok).
 // Herkese açık site, bu katmanı taban haberlerin üstüne uygulayarak gösterir.
@@ -79,7 +86,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 };
 
 export function getSettings(): SiteSettings {
-  return { ...DEFAULT_SETTINGS, ...read<Partial<SiteSettings>>(K.settings, {}) };
+  return { ...DEFAULT_SETTINGS, ...(PUB.settings || {}), ...read<Partial<SiteSettings>>(K.settings, {}) };
 }
 export function saveSettings(s: Partial<SiteSettings>) {
   write(K.settings, { ...getSettings(), ...s });
@@ -131,7 +138,7 @@ export function injectAnalytics() {
 
 /* ================= Kategoriler (navigasyon) ================= */
 export function getCategories(): string[] {
-  return read<string[]>(K.categories, CATEGORIES);
+  return read<string[]>(K.categories, (PUB.categories as string[]) || CATEGORIES);
 }
 export function saveCategories(list: string[]) {
   const clean = Array.from(new Set(list.map(c => c.trim()).filter(Boolean)));
@@ -140,7 +147,7 @@ export function saveCategories(list: string[]) {
 }
 
 /* ================= Manuel haberler ================= */
-export function getManualNews(): NewsItem[] { return read<NewsItem[]>(K.manual, []); }
+export function getManualNews(): NewsItem[] { return read<NewsItem[]>(K.manual, (PUB.manual as NewsItem[]) || []); }
 export function saveManualNews(list: NewsItem[]) { write(K.manual, list); }
 export function upsertManualNews(item: NewsItem) {
   const list = getManualNews();
@@ -152,21 +159,21 @@ export function deleteManualNews(id: string) { saveManualNews(getManualNews().fi
 export function isManual(id: string): boolean { return getManualNews().some(n => n.id === id); }
 
 /* ================= Taban haber düzenlemeleri ================= */
-export function getEdits(): Record<string, Partial<NewsItem>> { return read(K.edits, {}); }
+export function getEdits(): Record<string, Partial<NewsItem>> { return read(K.edits, (PUB.edits as Record<string, Partial<NewsItem>>) || {}); }
 export function setEdit(id: string, patch: Partial<NewsItem>) {
   const e = getEdits(); e[id] = { ...e[id], ...patch }; write(K.edits, e);
 }
 export function clearEdit(id: string) { const e = getEdits(); delete e[id]; write(K.edits, e); }
 
 /* ================= Gizle / Manşet / Öne çıkar ================= */
-export function getHidden(): string[] { return read<string[]>(K.hidden, []); }
+export function getHidden(): string[] { return read<string[]>(K.hidden, (PUB.hidden as string[]) || []); }
 export function toggleHidden(id: string) {
   const h = getHidden(); write(K.hidden, h.includes(id) ? h.filter(x => x !== id) : [...h, id]);
 }
 export function isHidden(id: string): boolean { return getHidden().includes(id); }
-export function getHeroId(): string | null { return localStorage.getItem(K.heroId); }
+export function getHeroId(): string | null { return localStorage.getItem(K.heroId) ?? (PUB.heroId || null); }
 export function setHeroId(id: string | null) { if (id) localStorage.setItem(K.heroId, id); else localStorage.removeItem(K.heroId); }
-export function getPinned(): string[] { return read<string[]>(K.pinned, []); }
+export function getPinned(): string[] { return read<string[]>(K.pinned, (PUB.pinned as string[]) || []); }
 export function togglePinned(id: string) {
   const p = getPinned(); write(K.pinned, p.includes(id) ? p.filter(x => x !== id) : [id, ...p]);
 }
@@ -210,6 +217,7 @@ function defaultAdSlots(): AdSlot[] {
 export function getAdSlots(): AdSlot[] {
   const saved = read<AdSlot[] | null>(K.ads, null);
   if (saved && saved.length) return saved;
+  if (PUB.ads && PUB.ads.length) return PUB.ads as AdSlot[];
   return defaultAdSlots();
 }
 export function saveAdSlots(slots: AdSlot[]) { write(K.ads, slots); }
@@ -221,6 +229,69 @@ export function getAdFor(type: string, page: 'home' | 'article' = 'home'): AdSlo
   if (page === 'home' && !slot.showOnHome) return null;
   if (page === 'article' && !slot.showOnArticle) return null;
   return slot;
+}
+
+/* ================= GitHub'a Yayınlama ================= */
+export function getToken(): string { return localStorage.getItem('admin_gh_token') || ''; }
+export function setToken(t: string) { localStorage.setItem('admin_gh_token', t.trim()); }
+
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin);
+}
+
+// Editörün mevcut çalışma durumunu adminData.json'a commit'ler ve deploy'u tetikler.
+export async function publish(): Promise<{ ok: boolean; msg: string }> {
+  const token = getToken();
+  if (!token) return { ok: false, msg: 'Önce GitHub erişim anahtarı (token) girin — Yayın sekmesinden.' };
+
+  const payload = {
+    manual: getManualNews(),
+    edits: getEdits(),
+    hidden: getHidden(),
+    heroId: getHeroId(),
+    pinned: getPinned(),
+    ads: getAdSlots(),
+    settings: getSettings(),
+    categories: getCategories(),
+  };
+
+  const api = `https://api.github.com/repos/${REPO}/contents/src/data/adminData.json`;
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  try {
+    // Mevcut dosyanın SHA'sını al
+    let sha: string | undefined;
+    const g = await fetch(`${api}?ref=main`, { headers });
+    if (g.status === 401) return { ok: false, msg: 'Anahtar geçersiz veya süresi dolmuş.' };
+    if (g.ok) sha = (await g.json()).sha;
+
+    // Dosyayı güncelle (commit)
+    const content = utf8ToBase64(JSON.stringify(payload, null, 2));
+    const p = await fetch(api, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ message: 'admin: icerik yayinlandi', content, sha, branch: 'main' }),
+    });
+    if (p.status === 403) return { ok: false, msg: 'Yetki yok — anahtar "Contents: Read and write" iznine sahip olmalı.' };
+    if (!p.ok) return { ok: false, msg: `Kaydetme hatası (${p.status}).` };
+
+    // Deploy workflow'unu tetikle
+    const d = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/natro-deploy.yml/dispatches`, {
+      method: 'POST', headers, body: JSON.stringify({ ref: 'main' }),
+    });
+    if (!d.ok) {
+      return { ok: true, msg: 'Kaydedildi ✓ Ancak otomatik yayın tetiklenemedi (anahtara "Actions: Read and write" izni gerekir). Site 6 saatte bir yine güncellenir.' };
+    }
+    return { ok: true, msg: 'Yayınlandı! 🎉 Site birkaç dakika içinde güncellenecek.' };
+  } catch (e) {
+    return { ok: false, msg: 'Bağlantı hatası: ' + (e as Error).message };
+  }
 }
 
 /* ================= Sıfırla / Yedekle / Geri yükle ================= */

@@ -7,13 +7,13 @@ import type { AdSlot, SiteSettings } from './adminStore';
 import {
   Lock, LogOut, Plus, Search, Pencil, Trash2, Eye, EyeOff, Star, Pin, Newspaper,
   Megaphone, Settings, ArrowLeft, Save, Home, LayoutDashboard, Tag, Palette,
-  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, Calendar
+  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, Calendar, UploadCloud
 } from 'lucide-react';
 
 const BASE_NEWS: NewsItem[] = (scrapedNewsData && (scrapedNewsData as NewsItem[]).length > 0)
   ? (scrapedNewsData as NewsItem[]) : mockNews;
 
-type View = 'dash' | 'list' | 'form' | 'ads' | 'cats' | 'seo' | 'look' | 'backup';
+type View = 'dash' | 'list' | 'form' | 'ads' | 'cats' | 'seo' | 'look' | 'backup' | 'publish';
 
 const toLocalInput = (ts?: number) => {
   if (!ts) return '';
@@ -357,6 +357,40 @@ const BackupSettings: React.FC = () => {
   );
 };
 
+/* ================= Yayınla ================= */
+const PublishPanel: React.FC = () => {
+  const [token, setTok] = useState(store.getToken());
+  const [busy, setBusy] = useState(false);
+  const [res, setRes] = useState<{ ok: boolean; msg: string } | null>(null);
+  const doPublish = async () => {
+    store.setToken(token);
+    setBusy(true); setRes(null);
+    setRes(await store.publish());
+    setBusy(false);
+  };
+  return (
+    <div>
+      <h2 style={{ marginBottom: 18 }}>Yayınla</h2>
+      <div className="admin-ad-card">
+        <div className="admin-fieldset-title"><UploadCloud size={14} /> Değişiklikleri Canlıya Al</div>
+        <p className="admin-muted" style={{ marginBottom: 14 }}>
+          Panelde yaptığın tüm değişiklikleri (haberler, ayarlar, reklamlar, SEO...) gerçek siteye gönderir.
+          Birkaç dakika içinde <b>sözmilletin.com</b>'da herkese görünür olur.
+        </p>
+        <label className="admin-label">GitHub Erişim Anahtarı (token)</label>
+        <input className="admin-input" type="password" value={token} onChange={(e) => setTok(e.target.value)} placeholder="github_pat_... veya ghp_..." />
+        <p className="admin-hint" style={{ lineHeight: 1.6 }}>
+          Anahtar yalnızca senin tarayıcında saklanır. Nasıl alınır: <b>GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens</b> → repo: <b>220creative/sozmilletin</b> → izinler: <b>Contents</b> ve <b>Actions</b> = "Read and write".
+        </p>
+        <button className="admin-btn-primary" style={{ marginTop: 14 }} disabled={busy} onClick={doPublish}>
+          {busy ? 'Yayınlanıyor…' : <><UploadCloud size={16} /> Şimdi Yayınla</>}
+        </button>
+        {res && <div className={res.ok ? 'admin-ok' : 'admin-err-text'} style={{ marginTop: 14 }}>{res.msg}</div>}
+      </div>
+    </div>
+  );
+};
+
 /* ================= Gösterge Paneli ================= */
 const Dashboard: React.FC<{ go: (v: View, edit?: NewsItem | null) => void }> = ({ go }) => {
   const all = store.getMergedNews(BASE_NEWS, { includeScheduled: true });
@@ -430,6 +464,7 @@ export const AdminApp: React.FC = () => {
       <aside className="admin-sidebar">
         <div className="admin-logo">SÖZ<span>.</span>MİLLETİN</div>
         <div className="admin-logo-sub">YÖNETİM</div>
+        <button className="admin-publish-btn" onClick={() => setView('publish')}><UploadCloud size={16} /> <span>Yayınla</span></button>
         <nav>
           <button className="hl" onClick={() => go('form', null)}><Plus size={17} /> <span>Yeni Haber</span></button>
           {nav.map(n => { const I = n.icon; return (
@@ -444,6 +479,7 @@ export const AdminApp: React.FC = () => {
 
       <main className="admin-main">
         {view === 'dash' && <Dashboard go={go} />}
+        {view === 'publish' && <PublishPanel />}
         {view === 'form' && <NewsForm editing={editing} onDone={afterForm} onCancel={() => setView('list')} />}
         {view === 'ads' && <AdsManager />}
         {view === 'cats' && <CategoryManager />}

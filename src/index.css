@@ -1341,3 +1341,8 @@ textarea.admin-input { resize: vertical; line-height: 1.6; }
 .admin-color-input { width: 44px; height: 34px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; background: none; }
 
 .badge.sched { background: rgba(2,132,199,.12); color: var(--accent-blue); }
+
+/* Admin — Yayınla butonu */
+.admin-publish-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #16a34a; color: #fff; border: none; border-radius: 8px; padding: 11px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 18px; transition: background .2s; }
+.admin-publish-btn:hover { background: #15803d; }
+@media (max-width: 768px) { .admin-publish-btn span { display: none; } }
