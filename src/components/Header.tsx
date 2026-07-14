@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
 import { getCategories } from '../admin/adminStore';
-import { Sun, Moon, Search, Bookmark } from 'lucide-react';
+import { Sun, Moon, Search, Bookmark, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   activeCategory: string;
@@ -24,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
     const savedTheme = localStorage.getItem('theme');
     return savedTheme === 'dark';
   });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (darkMode) {
@@ -47,13 +48,13 @@ export const Header: React.FC<HeaderProps> = ({
           <Logo variant="compact" />
         </div>
 
-        {/* Orta: Kategoriler */}
-        <ul className="nav-links">
+        {/* Orta: Kategoriler (mobilde açılır menü) */}
+        <ul className={`nav-links ${menuOpen ? 'open' : ''}`}>
           {getCategories().map(category => (
             <li key={category}>
               <button
                 className={`nav-link ${activeCategory === category && !showSavedOnly ? 'active' : ''}`}
-                onClick={() => { setActiveCategory(category); setShowSavedOnly(false); }}
+                onClick={() => { setActiveCategory(category); setShowSavedOnly(false); setMenuOpen(false); }}
               >
                 {category}
               </button>
@@ -63,6 +64,14 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Sağ: Arama, Kaydetme ve Karanlık Mod */}
         <div className="header-actions">
+          <button
+            className="icon-btn mobile-menu-btn"
+            onClick={() => setMenuOpen(v => !v)}
+            title="Menü"
+            aria-label="Menü"
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
           <button className="icon-btn" onClick={onSearchOpen} title="Haber Ara">
             <Search size={18} />
           </button>

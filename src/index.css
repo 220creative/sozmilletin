@@ -106,7 +106,11 @@ body.dark-mode .header-wrapper {
   justify-content: space-between;
   padding: 0 24px;
   height: 70px;
+  position: relative;
 }
+
+/* Hamburger butonu — sadece mobil/tablet */
+.mobile-menu-btn { display: none; }
 
 .nav-links {
   display: flex;
@@ -1346,3 +1350,35 @@ textarea.admin-input { resize: vertical; line-height: 1.6; }
 .admin-publish-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #16a34a; color: #fff; border: none; border-radius: 8px; padding: 11px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 18px; transition: background .2s; }
 .admin-publish-btn:hover { background: #15803d; }
 @media (max-width: 768px) { .admin-publish-btn span { display: none; } }
+
+/* ===== Mobil hamburger menü (kategoriler) ===== */
+@media (max-width: 1024px) {
+  .mobile-menu-btn { display: flex; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-premium);
+    padding: 8px;
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
+    z-index: 98;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links li { width: 100%; list-style: none; }
+  .nav-link {
+    width: 100%;
+    text-align: left;
+    padding: 13px 16px;
+    font-size: 15px;
+    border-radius: 8px;
+  }
+}
