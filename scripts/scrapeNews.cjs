@@ -29,6 +29,8 @@ const FEEDS = [
   { name: 'Hürriyet', url: 'https://www.hurriyet.com.tr/rss/gundem' },
   { name: 'Ensonhaber', url: 'https://www.ensonhaber.com/rss/ensonhaber.xml' },
   { name: 'Haberler.com', url: 'http://rss.haberler.com/rss.asp' },
+  { name: 'Haberler.com Darıca', url: 'https://rss.haberler.com/rss.asp?ilce=darica' },
+  { name: 'Haberler.com Gebze', url: 'https://rss.haberler.com/rss.asp?ilce=gebze' },
   { name: 'Mynet', url: 'https://www.mynet.com/haber/rss/sondakika' }
 ];
 
