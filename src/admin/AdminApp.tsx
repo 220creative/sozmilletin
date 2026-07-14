@@ -7,7 +7,7 @@ import type { AdSlot, SiteSettings } from './adminStore';
 import {
   Lock, LogOut, Plus, Search, Pencil, Trash2, Eye, EyeOff, Star, Pin, Newspaper,
   Megaphone, Settings, ArrowLeft, Save, Home, LayoutDashboard, Tag, Palette,
-  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, Calendar, UploadCloud
+  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, Calendar, UploadCloud, Menu, X
 } from 'lucide-react';
 
 const BASE_NEWS: NewsItem[] = (scrapedNewsData && (scrapedNewsData as NewsItem[]).length > 0)
@@ -514,6 +514,7 @@ export const AdminApp: React.FC = () => {
   const [editing, setEditing] = useState<NewsItem | null>(null);
   const [query, setQuery] = useState('');
   const [catFilter, setCatFilter] = useState('Tümü');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, force] = useState(0);
   const refresh = () => force(x => x + 1);
 
@@ -527,7 +528,7 @@ export const AdminApp: React.FC = () => {
     (catFilter === 'Tümü' || n.category === catFilter));
   const visible = filtered.slice(0, 60);
 
-  const go = (v: View, edit: NewsItem | null = null) => { setEditing(edit); setView(v); };
+  const go = (v: View, edit: NewsItem | null = null) => { setEditing(edit); setView(v); setIsMobileMenuOpen(false); };
   const afterForm = () => { setView('list'); refresh(); };
 
   const nav: { v: View; label: string; icon: React.ElementType }[] = [
@@ -542,14 +543,27 @@ export const AdminApp: React.FC = () => {
 
   return (
     <div className="admin-root">
-      <aside className="admin-sidebar">
+      {/* Mobil Header */}
+      <div className="admin-mobile-header">
         <div className="admin-logo">SÖZ<span>.</span>MİLLETİN</div>
-        <div className="admin-logo-sub">YÖNETİM</div>
-        <button className="admin-publish-btn" onClick={() => setView('publish')}><UploadCloud size={16} /> <span>Yayınla</span></button>
+        <button className="icon-btn" onClick={() => setIsMobileMenuOpen(true)}><Menu size={24} color="#fff" /></button>
+      </div>
+
+      {/* Overlay */}
+      {isMobileMenuOpen && <div className="admin-sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)} />}
+
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="admin-sidebar-top-close" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="admin-logo">SÖZ<span>.</span>MİLLETİN</div>
+          <button className="icon-btn"><X size={24} color="#fff" /></button>
+        </div>
+        <div className="admin-logo desktop-only">SÖZ<span>.</span>MİLLETİN</div>
+        <div className="admin-logo-sub desktop-only">YÖNETİM</div>
+        <button className="admin-publish-btn" onClick={() => { setView('publish'); setIsMobileMenuOpen(false); }}><UploadCloud size={16} /> <span>Yayınla</span></button>
         <nav>
           <button className="hl" onClick={() => go('form', null)}><Plus size={17} /> <span>Yeni Haber</span></button>
           {nav.map(n => { const I = n.icon; return (
-            <button key={n.v} className={view === n.v ? 'active' : ''} onClick={() => setView(n.v)}><I size={17} /> <span>{n.label}</span></button>
+            <button key={n.v} className={view === n.v ? 'active' : ''} onClick={() => go(n.v)}><I size={17} /> <span>{n.label}</span></button>
           ); })}
         </nav>
         <div className="admin-sidebar-bottom">
