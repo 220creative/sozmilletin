@@ -281,8 +281,22 @@ const AdsManager: React.FC = () => {
 
                 {ad.mode === 'image' ? (
                   <>
-                    <label className="admin-label">Görsel URL <span className="admin-muted">({spec.size} önerilir)</span></label>
-                    <input className="admin-input" value={ad.imageUrl} onChange={(e) => upd(i, { imageUrl: e.target.value })} placeholder="https://..." />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <label className="admin-label" style={{ margin: 0 }}>Görsel URL <span className="admin-muted">({spec.size} önerilir)</span></label>
+                      <label className="admin-btn-ghost" style={{ cursor: 'pointer', fontSize: '12px', padding: '4px 10px', margin: 0 }}>
+                        <Upload size={14} style={{ marginRight: 6 }} /> Bilgisayardan Seç
+                        <input type="file" accept="image/*" hidden onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 2 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 2MB.'); return; }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => upd(i, { imageUrl: ev.target?.result as string });
+                            reader.readAsDataURL(file);
+                          }
+                        }} />
+                      </label>
+                    </div>
+                    <input className="admin-input" value={ad.imageUrl} onChange={(e) => upd(i, { imageUrl: e.target.value })} placeholder="https://... veya bilgisayardan seçin" />
                     <label className="admin-label">Hedef Link (tıklayınca gidilecek)</label>
                     <input className="admin-input" value={ad.destinationUrl} onChange={(e) => upd(i, { destinationUrl: e.target.value })} placeholder="https://..." />
                     <div className="admin-form-row">
