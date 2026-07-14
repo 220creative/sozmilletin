@@ -152,56 +152,137 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
 };
 
 /* ================= Reklam Yönetimi (PRO) ================= */
+const AD_SPECS: Record<string, { size: string; sizeMobile: string; where: string; ratio: number; previewW: number }> = {
+  leaderboard: { size: '728 × 90', sizeMobile: '320 × 100', where: 'Sayfa altında, tam genişlik banner', ratio: 728 / 90, previewW: 468 },
+  'sidebar-rect': { size: '300 × 250', sizeMobile: '300 × 250', where: 'Kenar sütun / haber yanı (Medium Rectangle)', ratio: 300 / 250, previewW: 300 },
+  'sidebar-tall': { size: '300 × 600', sizeMobile: 'gizli', where: 'Kenar sütun (Half Page / Gökdelen)', ratio: 300 / 600, previewW: 200 },
+  native: { size: 'Esnek', sizeMobile: 'Esnek', where: 'İçerik arası sponsorlu kart', ratio: 3.4, previewW: 320 },
+};
+
+// Reklamın sitede nasıl görüneceğini gösteren canlı önizleme
+const AdPreview: React.FC<{ ad: AdSlot }> = ({ ad }) => {
+  const spec = AD_SPECS[ad.type];
+  const w = spec.previewW;
+  const h = ad.type === 'native' ? undefined : Math.round(w / spec.ratio);
+  const box: React.CSSProperties = {
+    width: w, maxWidth: '100%', height: h, minHeight: ad.type === 'native' ? 96 : undefined,
+    border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden',
+    position: 'relative', background: 'var(--bg-secondary)', boxShadow: 'var(--shadow-premium)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  };
+
+  if (ad.mode === 'code') {
+    return ad.code.trim()
+      ? <div style={box} dangerouslySetInnerHTML={{ __html: ad.code }} />
+      : <div style={{ ...box, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 10 }}>Kod girildiğinde burada görünür</div>;
+  }
+  if (ad.imageUrl.trim()) {
+    return (
+      <div style={box}>
+        <img src={ad.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
+        {(ad.title || ad.ctaText) && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,.85), transparent)', padding: '8px 10px', color: '#fff', textAlign: 'left' }}>
+            {ad.title && <div style={{ fontSize: 12, fontWeight: 800 }}>{ad.title}</div>}
+            {ad.ctaText && <div style={{ fontSize: 10, color: '#ffd54a', fontWeight: 700 }}>{ad.ctaText} →</div>}
+          </div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div style={{ ...box, flexDirection: 'column', gap: 3, color: 'var(--text-muted)', textAlign: 'center', padding: 10 }}>
+      {ad.title ? (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>{ad.title}</div>
+          {ad.description && <div style={{ fontSize: 11 }}>{ad.description}</div>}
+          {ad.ctaText && <div style={{ fontSize: 11, color: 'var(--accent-red)', fontWeight: 700 }}>{ad.ctaText} →</div>}
+        </>
+      ) : (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, opacity: .6 }}>REKLAM ALANI</div>
+          <div style={{ fontSize: 11, opacity: .5 }}>{spec.size}</div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const AdsManager: React.FC = () => {
   const [slots, setSlots] = useState<AdSlot[]>(() => store.getAdSlots().map(a => ({ ...a })));
   const [ok, setOk] = useState(false);
   const upd = (i: number, patch: Partial<AdSlot>) => { setSlots(p => p.map((a, idx) => idx === i ? { ...a, ...patch } : a)); setOk(false); };
   const persist = () => { store.saveAdSlots(slots); setOk(true); };
+
   return (
     <div>
       <div className="admin-section-head"><h2>Reklam Yönetimi</h2><button className="admin-btn-primary" onClick={persist}><Save size={16} /> Kaydet</button></div>
-      <p className="admin-muted" style={{ marginBottom: 16 }}>Her reklam alanının nerede (ana sayfa / haber sayfası) ve nasıl (görsel ya da AdSense kodu) görüneceğini buradan yönetin.</p>
+      <p className="admin-muted" style={{ marginBottom: 16 }}>Her reklam alanının önerilen boyutu, nerede görüneceği ve nasıl görüneceği aşağıda. Sağdaki önizleme yazdıkça anlık güncellenir.</p>
       {ok && <div className="admin-ok">Reklamlar kaydedildi. Siteyi yenileyince görünür.</div>}
-      {slots.map((ad, i) => (
-        <div key={ad.id} className="admin-ad-card">
-          <div className="admin-ad-head">
-            <div><span className="admin-ad-type">{ad.label}</span></div>
-            <label className="admin-switch"><input type="checkbox" checked={ad.enabled} onChange={(e) => upd(i, { enabled: e.target.checked })} /> <span>{ad.enabled ? 'Açık' : 'Kapalı'}</span></label>
-          </div>
 
-          <div className="admin-placement">
-            <span className="admin-muted">Nerede görünsün:</span>
-            <label className="admin-check sm"><input type="checkbox" checked={ad.showOnHome} onChange={(e) => upd(i, { showOnHome: e.target.checked })} /> Ana sayfa</label>
-            <label className="admin-check sm"><input type="checkbox" checked={ad.showOnArticle} onChange={(e) => upd(i, { showOnArticle: e.target.checked })} /> Haber sayfası</label>
-          </div>
-
-          <label className="admin-label">Reklam türü</label>
-          <select className="admin-input" value={ad.mode} onChange={(e) => upd(i, { mode: e.target.value as 'image' | 'code' })}>
-            <option value="image">Görsel + link</option>
-            <option value="code">Özel kod (Google AdSense / HTML)</option>
-          </select>
-
-          {ad.mode === 'image' ? (
-            <>
-              <div className="admin-form-row">
-                <div style={{ flex: 1 }}><label className="admin-label">Görsel URL</label><input className="admin-input" value={ad.imageUrl} onChange={(e) => upd(i, { imageUrl: e.target.value })} /></div>
-                <div style={{ flex: 1 }}><label className="admin-label">Hedef Link</label><input className="admin-input" value={ad.destinationUrl} onChange={(e) => upd(i, { destinationUrl: e.target.value })} /></div>
+      {slots.map((ad, i) => {
+        const spec = AD_SPECS[ad.type];
+        return (
+          <div key={ad.id} className="admin-ad-card">
+            <div className="admin-ad-head">
+              <div>
+                <span className="admin-ad-type">{ad.label}</span>
+                <div className="admin-ad-specs">
+                  <span className="admin-spec-badge">📐 Önerilen: <b>{spec.size}</b> px</span>
+                  <span className="admin-spec-badge">📱 Mobil: <b>{spec.sizeMobile}</b></span>
+                  <span className="admin-spec-badge">📍 {spec.where}</span>
+                </div>
               </div>
-              <div className="admin-form-row">
-                <div style={{ flex: 1 }}><label className="admin-label">Başlık</label><input className="admin-input" value={ad.title} onChange={(e) => upd(i, { title: e.target.value })} /></div>
-                <div style={{ flex: 1 }}><label className="admin-label">Buton metni</label><input className="admin-input" value={ad.ctaText} onChange={(e) => upd(i, { ctaText: e.target.value })} /></div>
+              <label className="admin-switch"><input type="checkbox" checked={ad.enabled} onChange={(e) => upd(i, { enabled: e.target.checked })} /> <span>{ad.enabled ? 'Açık' : 'Kapalı'}</span></label>
+            </div>
+
+            <div className="admin-placement">
+              <span className="admin-muted">Nerede görünsün:</span>
+              <label className="admin-check sm"><input type="checkbox" checked={ad.showOnHome} onChange={(e) => upd(i, { showOnHome: e.target.checked })} /> Ana sayfa</label>
+              <label className="admin-check sm"><input type="checkbox" checked={ad.showOnArticle} onChange={(e) => upd(i, { showOnArticle: e.target.checked })} /> Haber sayfası</label>
+            </div>
+
+            <div className="admin-ad-grid">
+              {/* Sol: form */}
+              <div>
+                <label className="admin-label">Reklam türü</label>
+                <select className="admin-input" value={ad.mode} onChange={(e) => upd(i, { mode: e.target.value as 'image' | 'code' })}>
+                  <option value="image">Görsel + link</option>
+                  <option value="code">Özel kod (Google AdSense / HTML)</option>
+                </select>
+
+                {ad.mode === 'image' ? (
+                  <>
+                    <label className="admin-label">Görsel URL <span className="admin-muted">({spec.size} önerilir)</span></label>
+                    <input className="admin-input" value={ad.imageUrl} onChange={(e) => upd(i, { imageUrl: e.target.value })} placeholder="https://..." />
+                    <label className="admin-label">Hedef Link (tıklayınca gidilecek)</label>
+                    <input className="admin-input" value={ad.destinationUrl} onChange={(e) => upd(i, { destinationUrl: e.target.value })} placeholder="https://..." />
+                    <div className="admin-form-row">
+                      <div style={{ flex: 1 }}><label className="admin-label">Başlık</label><input className="admin-input" value={ad.title} onChange={(e) => upd(i, { title: e.target.value })} /></div>
+                      <div style={{ flex: 1 }}><label className="admin-label">Buton metni</label><input className="admin-input" value={ad.ctaText} onChange={(e) => upd(i, { ctaText: e.target.value })} /></div>
+                    </div>
+                    <label className="admin-label">Açıklama</label>
+                    <input className="admin-input" value={ad.description} onChange={(e) => upd(i, { description: e.target.value })} />
+                  </>
+                ) : (
+                  <>
+                    <label className="admin-label">Reklam kodu (AdSense / HTML)</label>
+                    <textarea className="admin-input" rows={6} value={ad.code} onChange={(e) => upd(i, { code: e.target.value })} placeholder="<script>...</script> veya <ins class='adsbygoogle'...></ins>" style={{ fontFamily: 'monospace', fontSize: 12 }} />
+                  </>
+                )}
               </div>
-              <label className="admin-label">Açıklama</label>
-              <input className="admin-input" value={ad.description} onChange={(e) => upd(i, { description: e.target.value })} />
-            </>
-          ) : (
-            <>
-              <label className="admin-label">Reklam kodu (AdSense / HTML)</label>
-              <textarea className="admin-input" rows={4} value={ad.code} onChange={(e) => upd(i, { code: e.target.value })} placeholder="<script>...</script> veya <ins class='adsbygoogle'...></ins>" style={{ fontFamily: 'monospace', fontSize: 12 }} />
-            </>
-          )}
-        </div>
-      ))}
+
+              {/* Sağ: canlı önizleme */}
+              <div className="admin-ad-preview-col">
+                <div className="admin-preview-label">CANLI ÖNİZLEME</div>
+                <div className="admin-preview-stage">
+                  <AdPreview ad={ad} />
+                </div>
+                {!ad.enabled && <div className="admin-preview-off">Bu alan kapalı — sitede görünmez.</div>}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
