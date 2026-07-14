@@ -13,9 +13,11 @@ export const Footer: React.FC = () => {
           
           {/* Brand & About */}
           <div className="footer-col brand-col">
-            <Logo variant="compact" />
+            <Logo variant="compact" light />
             <p className="footer-description">
-              {settings.footerText || "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi."}
+              {settings.footerText === "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi." 
+                ? "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi. İleri teknolojimiz ve tarafsız yazar kadromuzla Kocaeli'nin ve Türkiye'nin nabzını tutmaya devam ediyoruz." 
+                : (settings.footerText || "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi. İleri teknolojimiz ve tarafsız yazar kadromuzla Kocaeli'nin ve Türkiye'nin nabzını tutmaya devam ediyoruz.")}
             </p>
             <div className="social-links">
               <a href={settings.social?.facebook || '#'} target="_blank" rel="noreferrer" aria-label="Facebook">

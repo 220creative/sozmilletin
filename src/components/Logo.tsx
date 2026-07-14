@@ -4,10 +4,13 @@ interface LogoProps {
   className?: string;
   height?: number | string;
   variant?: 'full' | 'compact' | 'header';
+  light?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) => {
+export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full', light = false }) => {
   const redColor = '#e30613';
+  const textColor = light ? '#ffffff' : 'var(--text-primary)';
+  const mutedColor = light ? '#94a3b8' : 'var(--text-muted)';
 
   if (variant === 'header') {
     // Navigasyon çubuğu için kompakt tipografik logo
@@ -32,7 +35,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
             fontWeight: 900,
             fontSize: '17px',
             letterSpacing: '-0.5px',
-            color: 'var(--text-primary)',
+            color: textColor,
             textTransform: 'uppercase',
           }}>
             SÖZ<span style={{ color: redColor }}>.</span>MİLLETİN
@@ -42,7 +45,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
             fontWeight: 500,
             fontSize: '8.5px',
             letterSpacing: '2px',
-            color: 'var(--text-muted)',
+            color: mutedColor,
             textTransform: 'uppercase',
           }}>
             MEDYA HABER
@@ -60,7 +63,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
         fontWeight: 900,
         fontSize: '22px',
         textTransform: 'uppercase',
-        color: 'var(--text-primary)',
+        color: textColor,
         letterSpacing: '-0.5px',
         cursor: 'pointer',
       }}>
@@ -91,7 +94,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
         <span style={{
           fontSize: '10px',
           letterSpacing: '3px',
-          color: 'var(--text-muted)',
+          color: mutedColor,
           fontFamily: "'Inter', sans-serif",
           fontWeight: 500,
           textTransform: 'uppercase',
@@ -108,7 +111,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
           fontWeight: 900,
           fontSize: 'clamp(44px, 8vw, 72px)',
           letterSpacing: '-3px',
-          color: 'var(--text-primary)',
+          color: textColor,
           textTransform: 'uppercase',
           lineHeight: 1,
         }}>
@@ -129,7 +132,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
           fontWeight: 300,
           fontSize: 'clamp(44px, 8vw, 72px)',
           letterSpacing: '-2px',
-          color: 'var(--text-primary)',
+          color: textColor,
           textTransform: 'uppercase',
           lineHeight: 1,
         }}>
@@ -143,7 +146,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', variant = 'full' }) 
         <span style={{
           fontSize: '10px',
           letterSpacing: '4px',
-          color: 'var(--text-muted)',
+          color: mutedColor,
           fontFamily: "'Inter', sans-serif",
           fontWeight: 600,
           textTransform: 'uppercase',

@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   siteName: 'SÖZ MİLLETİN',
   slogan: 'MEDYA HABER',
   contactEmail: 'info@sozmilletin.com',
-  footerText: "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi.",
+  footerText: "Söz Milletin, Türkiye'nin bağımsız ve ilkeli haber kaynağı. Doğru, tarafsız ve hızlı haberciliğin dijital adresi. İleri teknolojimiz ve tarafsız yazar kadromuzla Kocaeli'nin ve Türkiye'nin nabzını tutmaya devam ediyoruz.",
   accentColor: '#b91c1c',
   social: { facebook: '', twitter: '', instagram: '', youtube: '' },
   showMarketTicker: true,
