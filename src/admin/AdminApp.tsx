@@ -182,7 +182,7 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
 
 /* ================= Reklam Yönetimi (PRO) ================= */
 const AD_SPECS: Record<string, { size: string; sizeMobile: string; where: string; ratio: number; previewW: number }> = {
-  leaderboard: { size: '728 × 90', sizeMobile: '320 × 100', where: 'Sayfa altında, tam genişlik banner', ratio: 728 / 90, previewW: 468 },
+  leaderboard: { size: '1000 × 300', sizeMobile: '320 × 100', where: 'Sayfa altında, tam genişlik banner', ratio: 1000 / 300, previewW: 468 },
   'sidebar-rect': { size: '300 × 250', sizeMobile: '300 × 250', where: 'Kenar sütun / haber yanı (Medium Rectangle)', ratio: 300 / 250, previewW: 300 },
   'sidebar-tall': { size: '300 × 600', sizeMobile: 'gizli', where: 'Kenar sütun (Half Page / Gökdelen)', ratio: 300 / 600, previewW: 200 },
   native: { size: 'Esnek', sizeMobile: 'Esnek', where: 'İçerik arası sponsorlu kart', ratio: 3.4, previewW: 320 },

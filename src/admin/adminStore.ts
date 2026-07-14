@@ -200,7 +200,7 @@ export interface AdSlot {
 
 function defaultAdSlots(): AdSlot[] {
   const labels: Record<string, string> = {
-    leaderboard: 'Üst / Alt Banner (728x90)',
+    leaderboard: 'Üst / Alt Banner (1000x300)',
     'sidebar-rect': 'Kenar Kare (300x250)',
     'sidebar-tall': 'Kenar Uzun (300x600)',
     native: 'Sponsorlu İçerik',
