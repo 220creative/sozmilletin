@@ -4,6 +4,9 @@ name: Haber Çek, Derle ve Natro'ya Yayınla
 # GitHub Actions public repolar için TAMAMEN ÜCRETSİZ ve sınırsızdır.
 # Netlify'a hiç gerek kalmaz.
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: '0 */6 * * *'   # 6 saatte bir (UTC 00:00, 06:00, 12:00, 18:00)
   workflow_dispatch:         # GitHub Actions sekmesinden elle çalıştırma
