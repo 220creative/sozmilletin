@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SEO } from '../components/SEO';
 import { NewsCard } from '../components/NewsCard';
 import { BreakingNews } from '../components/BreakingNews';
 import { AdZone } from '../components/AdZone';
@@ -66,9 +67,22 @@ export const HomePage: React.FC<HomePageProps> = ({
   const gridNews = filteredNews.slice(1);
   const trendingNews = [...newsList].sort((a, b) => b.views - a.views).slice(0, 5);
 
+  const settings = getSettings();
+  
+  // SEO Başlığı Belirleme
+  let pageTitle = settings.seoTitle;
+  if (showSavedOnly) pageTitle = `Kaydedilen Haberler - Söz Milletin`;
+  else if (searchQuery.trim() !== '') pageTitle = `"${searchQuery}" Arama Sonuçları - Söz Milletin`;
+  else if (activeCategory !== 'Tümü') pageTitle = `${activeCategory} Haberleri - Söz Milletin`;
+
   return (
     <>
-      {getSettings().showBreaking && <BreakingNews newsItems={breakingNews} onNewsClick={openNews} />}
+      <SEO 
+        title={pageTitle}
+        description={settings.seoDescription}
+        image={settings.ogImage}
+      />
+      {settings.showBreaking && <BreakingNews newsItems={breakingNews} onNewsClick={openNews} />}
 
       <main className="main-content">
         <AdZone type="leaderboard" className="ad-leaderboard" />

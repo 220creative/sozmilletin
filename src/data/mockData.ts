@@ -36,6 +36,7 @@ export interface NewsItem {
   seoTitle?: string;
   seoDescription?: string;
   slug?: string;
+  timestamp?: number;
 }
 
 export interface AdCampaign {

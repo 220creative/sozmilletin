@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { NewsItem, Comment } from '../data/mockData';
 import { NewsCard } from '../components/NewsCard';
 import { AdZone } from '../components/AdZone';
-import { setDocumentSeo } from '../admin/adminStore';
+import { SEO } from '../components/SEO';
 import {
   ChevronLeft, Bookmark, Send, Heart, Flame, ThumbsUp, Frown,
   MessageSquare, Clock, Eye, Share2, Calendar
@@ -46,12 +46,7 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedN
     if (!id || !news) return;
     window.scrollTo(0, 0);
     onView(id);
-    // Habere özel SEO etiketleri
-    setDocumentSeo({
-      title: news.seoTitle?.trim() || `${news.title} — SÖZ MİLLETİN`,
-      description: news.seoDescription?.trim() || news.summary,
-      image: news.image?.startsWith('http') ? news.image : undefined,
-    });
+
     setComments([...loadStoredComments(id), ...(news.comments || [])]);
     let prevReaction: string | null = null;
     try { prevReaction = localStorage.getItem(reactionKey(id)); } catch { /* yok say */ }
@@ -128,8 +123,21 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedN
   };
 
   return (
-    <main className="main-content article-page">
-      <button onClick={() => navigate(-1)} className="back-btn"><ChevronLeft size={16} /> Geri</button>
+    <>
+      <SEO 
+        title={news.seoTitle?.trim() || `${news.title} — SÖZ MİLLETİN`}
+        description={news.seoDescription?.trim() || news.summary}
+        image={news.image}
+        type="article"
+        url={`https://sozmilletin.com/haber/${news.id}`}
+        articleData={{
+          publishedTime: new Date(news.timestamp || Date.now()).toISOString(),
+          authorName: news.author.name,
+          section: news.category,
+        }}
+      />
+      <main className="main-content article-page">
+        <button onClick={() => navigate(-1)} className="back-btn"><ChevronLeft size={16} /> Geri</button>
 
       <div className="article-layout">
         <article className="article-body">
@@ -237,5 +245,6 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedN
         </aside>
       </div>
     </main>
+    </>
   );
 };

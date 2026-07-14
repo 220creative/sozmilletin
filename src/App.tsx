@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { AdminApp } from './admin/AdminApp';
-import { getMergedNews, getSettings, applyTheme, injectAnalytics, setDocumentSeo } from './admin/adminStore';
+import { getMergedNews, getSettings, applyTheme, injectAnalytics } from './admin/adminStore';
 import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
@@ -33,13 +33,7 @@ function App() {
 
   useEffect(() => { setMounted(true); applyTheme(); injectAnalytics(); }, []);
 
-  // Ana sayfa SEO etiketleri
-  useEffect(() => {
-    if (location.pathname === '/') {
-      setDocumentSeo({ title: settings.seoTitle, description: settings.seoDescription, image: settings.ogImage });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+
 
   const [savedNewsIds, setSavedNewsIds] = useState<string[]>(() => {
     try {
