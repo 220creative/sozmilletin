@@ -1,10 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Clock, Eye } from 'lucide-react';
 import type { NewsItem } from '../data/mockData';
 
 interface NewsCardProps {
   news: NewsItem;
-  onClick: () => void;
   className?: string;
   variant?: 'hero' | 'standard' | 'sidebar';
 }
@@ -15,12 +15,13 @@ const imgFallback = (e: React.SyntheticEvent<HTMLImageElement>) => {
   if (!e.currentTarget.src.endsWith(PLACEHOLDER)) e.currentTarget.src = PLACEHOLDER;
 };
 
-export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '', variant = 'standard' }) => {
+export const NewsCard: React.FC<NewsCardProps> = ({ news, className = '', variant = 'standard' }) => {
+  const to = `/haber/${news.id}`;
 
   if (variant === 'hero') {
     // Manşet: görselin üstüne binen başlık (profesyonel portal stili)
     return (
-      <div className={`hero-card ${className}`} onClick={onClick}>
+      <Link to={to} className={`hero-card card-link ${className}`}>
         <img src={news.image} alt={news.title} className="hero-card-img" loading="eager" onError={imgFallback} />
         <div className="hero-card-overlay">
           <span className="hero-kicker">{news.category}</span>
@@ -34,13 +35,13 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Eye size={12} /> {news.views.toLocaleString('tr-TR')}</span>
           </div>
         </div>
-      </div>
+      </Link>
     );
   }
 
   if (variant === 'sidebar') {
     return (
-      <div className={`sidebar-list-item ${className}`} onClick={onClick}>
+      <Link to={to} className={`sidebar-list-item card-link ${className}`}>
         <img src={news.image} alt={news.title} className="sidebar-list-img" loading="lazy" onError={imgFallback} />
         <div className="sidebar-list-content">
           <div>
@@ -53,12 +54,12 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} /> {news.readTime}</span>
           </div>
         </div>
-      </div>
+      </Link>
     );
   }
 
   return (
-    <div className={`classic-card ${className}`} onClick={onClick}>
+    <Link to={to} className={`classic-card card-link ${className}`}>
       <div className="classic-card-img-wrapper">
         <img src={news.image} alt={news.title} className="classic-card-img" loading="lazy" onError={imgFallback} />
       </div>
@@ -66,7 +67,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '
         <span className="category-tag">{news.category}</span>
         <h3 className="classic-card-title">{news.title}</h3>
         <p className="classic-card-desc">{news.summary}</p>
-        
+
         <div className="classic-card-meta">
           <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{news.author.name}</span>
           <span>•</span>
@@ -75,6 +76,6 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick, className = '
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Eye size={12} /> {news.views.toLocaleString('tr-TR')}</span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

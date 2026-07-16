@@ -3,6 +3,7 @@ export interface Comment {
   user: string;
   content: string;
   date: string;
+  ts?: number; // yazılma zamanı (timestamp) — "Az önce / X dk önce" için
 }
 
 export interface NewsItem {

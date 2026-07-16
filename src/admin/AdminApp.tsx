@@ -35,7 +35,6 @@ const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
           onChange={(e) => { setPw(e.target.value); setErr(false); }} className={err ? 'admin-input err' : 'admin-input'} />
         {err && <div className="admin-err-text">Parola hatalı.</div>}
         <button type="submit" className="admin-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Giriş Yap</button>
-        <p className="admin-hint">Varsayılan parola: <b>sozmilletin2026</b></p>
       </form>
     </div>
   );
@@ -182,10 +181,10 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
 
 /* ================= Reklam Yönetimi (PRO) ================= */
 const AD_SPECS: Record<string, { size: string; sizeMobile: string; where: string; ratio: number; previewW: number }> = {
-  leaderboard: { size: '1000 × 300', sizeMobile: '320 × 100', where: 'Sayfa altında, tam genişlik banner', ratio: 1000 / 300, previewW: 468 },
+  leaderboard: { size: '970 × 250', sizeMobile: '320 × 100', where: 'Üst/alt tam genişlik banner (Billboard)', ratio: 970 / 250, previewW: 468 },
   'sidebar-rect': { size: '300 × 250', sizeMobile: '300 × 250', where: 'Kenar sütun / haber yanı (Medium Rectangle)', ratio: 300 / 250, previewW: 300 },
   'sidebar-tall': { size: '300 × 600', sizeMobile: 'gizli', where: 'Kenar sütun (Half Page / Gökdelen)', ratio: 300 / 600, previewW: 200 },
-  native: { size: 'Esnek', sizeMobile: 'Esnek', where: 'İçerik arası sponsorlu kart', ratio: 3.4, previewW: 320 },
+  native: { size: '400 × 300', sizeMobile: 'Esnek', where: 'İçerik arası sponsorlu kart', ratio: 4 / 3, previewW: 320 },
 };
 
 // Reklamın sitede nasıl görüneceğini gösteren canlı önizleme
@@ -206,9 +205,19 @@ const AdPreview: React.FC<{ ad: AdSlot }> = ({ ad }) => {
       : <div style={{ ...box, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 10 }}>Kod girildiğinde burada görünür</div>;
   }
   if (ad.imageUrl.trim()) {
+    const fit = ad.imageFit || 'contain';
+    const imgStyle: React.CSSProperties = fit === 'natural'
+      ? { width: '100%', height: 'auto', display: 'block' }
+      : { width: '100%', height: '100%', objectFit: fit };
+    const boxStyle: React.CSSProperties = fit === 'natural'
+      ? { ...box, height: 'auto', background: 'var(--bg-tertiary)' }
+      : { ...box, background: 'var(--bg-tertiary)' };
+    const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(ad.imageUrl);
     return (
-      <div style={box}>
-        <img src={ad.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
+      <div style={boxStyle}>
+        {isVideo
+          ? <video src={ad.imageUrl} style={imgStyle} autoPlay loop muted playsInline />
+          : <img src={ad.imageUrl} alt="" style={imgStyle} onError={(e) => { (e.currentTarget.style.display = 'none'); }} />}
         {(ad.title || ad.ctaText) && (
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,.85), transparent)', padding: '8px 10px', color: '#fff', textAlign: 'left' }}>
             {ad.title && <div style={{ fontSize: 12, fontWeight: 800 }}>{ad.title}</div>}
@@ -305,6 +314,15 @@ const AdsManager: React.FC = () => {
                     </div>
                     <label className="admin-label">Açıklama</label>
                     <input className="admin-input" value={ad.description} onChange={(e) => upd(i, { description: e.target.value })} />
+                    <label className="admin-label">Görsel sığdırma</label>
+                    <select className="admin-input" value={ad.imageFit || 'contain'} onChange={(e) => upd(i, { imageFit: e.target.value as 'contain' | 'cover' | 'natural' })}>
+                      <option value="contain">Sığdır — tam görünür, kırpılmaz (önerilen)</option>
+                      <option value="cover">Doldur — alanı kaplar, taşan kısım kırpılır</option>
+                      <option value="natural">Doğal — görselin kendi oranında</option>
+                    </select>
+                    <p className="admin-muted" style={{ fontSize: 11, marginTop: 4 }}>
+                      Görsel önerilen ölçüde ({spec.size}) değilse “Sığdır” kırpma yapmadan tümünü gösterir.
+                    </p>
                   </>
                 ) : (
                   <>
@@ -597,7 +615,7 @@ const Dashboard: React.FC<{ go: (v: View, edit?: NewsItem | null) => void }> = (
                 <img src={n.image} alt="" className="admin-recent-thumb" onError={(e) => (e.currentTarget.src = '/haber-placeholder.svg')} />
                 <div className="admin-recent-info">
                   <div className="admin-recent-title">{n.title}</div>
-                  <div className="admin-recent-meta"><span className="badge cat">{n.category}</span> • {new Date(n.date).toLocaleDateString('tr-TR')}</div>
+                  <div className="admin-recent-meta"><span className="badge cat">{n.category}</span> • {n.timestamp ? new Date(n.timestamp).toLocaleDateString('tr-TR') : n.date}</div>
                 </div>
                 <button className="icon-btn" onClick={() => go('form', n)} title="Düzenle"><Pencil size={16} /></button>
               </div>

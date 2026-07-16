@@ -24,7 +24,10 @@ const K = {
   categories: 'admin_categories',
 };
 
-const DEFAULT_PASSWORD = 'sozmilletin2026';
+// Not: Depo herkese açık olduğu için buradaki değer gizli sayılmaz; ilk girişten
+// sonra panelden (Ayarlar → Parola) kendi parolanı belirle — o değer yalnızca
+// tarayıcının localStorage'ında saklanır ve depoya yazılmaz.
+const DEFAULT_PASSWORD = 'MilletinSozu.2026!';
 
 export const MANUAL_CATEGORIES = ['Kocaeli', 'Siyaset', 'Asayiş', 'Spor', 'Magazin', 'Gündem', 'Ekonomi', 'Teknoloji', 'Dünya'];
 
@@ -196,6 +199,11 @@ export interface AdSlot {
   code: string;
   showOnHome: boolean;
   showOnArticle: boolean;
+  // Görselin alana nasıl sığacağı:
+  // 'contain' = tam görünür, kırpılmaz (oran korunur) — varsayılan, en güvenli
+  // 'cover'   = alanı doldurur, taşan kısım kırpılır
+  // 'natural' = görselin kendi oranında, tam genişlik (sabit yükseklik yok)
+  imageFit?: 'contain' | 'cover' | 'natural';
 }
 
 function defaultAdSlots(): AdSlot[] {
@@ -212,6 +220,7 @@ function defaultAdSlots(): AdSlot[] {
       title: m?.title || '', description: m?.description || '', imageUrl: m?.imageUrl || '',
       destinationUrl: m?.destinationUrl || '#', ctaText: m?.ctaText || '', code: '',
       showOnHome: true, showOnArticle: true,
+      imageFit: 'contain' as const,
     };
   });
 }

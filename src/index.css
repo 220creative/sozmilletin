@@ -1,5 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
+/* Haber kartları artık gerçek <a> linki (SEO + crawlability). Link stilini sıfırla;
+   kartın kendi sınıfı (.hero-card, .classic-card, .sidebar-list-item) düzeni korur. */
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Ekran okuyucular için görünür, gözle görünmez (SEO H1 gibi) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 :root {
   /* Modern Premium Editöryal Renkleri */
   --bg-primary: #fcfdfd;     /* Lüks hafif kağıt beyazı */
@@ -809,10 +830,10 @@ body.dark-mode .breaking-time { color: #f87171; }
   border-radius: var(--border-radius-card);
   border: 1px solid var(--border-color);
   overflow: hidden;
-  cursor: pointer;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary); /* 'contain' modunda kenar boşluğu rengi */
   box-shadow: var(--shadow-premium);
   transition: var(--transition-smooth);
+  display: block;
 }
 
 .ad-box:hover {
@@ -820,24 +841,72 @@ body.dark-mode .breaking-time { color: #f87171; }
   transform: translateY(-2px);
 }
 
-.ad-box.leaderboard {
-  height: 90px;
+/* Alan oranları — yer tutucu ve contain/cover modları için (sabit px yükseklik YOK,
+   responsive; layout shift/CLS'yi de önler). */
+.ad-box.leaderboard  { aspect-ratio: 970 / 250; }
+.ad-box.sidebar-rect { aspect-ratio: 300 / 250; }
+.ad-box.sidebar-tall { aspect-ratio: 300 / 600; }
+.ad-box.native       { aspect-ratio: 4 / 3; }
+
+/* Görsel + sığdırma modları */
+.ad-img { display: block; width: 100%; height: 100%; }
+.fit-cover .ad-img   { object-fit: cover; }   /* alanı doldur, taşanı kırp */
+.fit-contain .ad-img { object-fit: contain; } /* tam görünür, kırpma yok */
+
+/* Doğal: sabit oran yok — görsel kendi oranında, tam genişlik */
+.ad-box.fit-natural { aspect-ratio: auto; }
+.ad-box.fit-natural .ad-img { height: auto; }
+
+/* AdSense / özel kod: oran serbest, kod kendi boyutunu belirler */
+.ad-box.ad-code {
+  aspect-ratio: auto;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
 }
 
-.ad-box.sidebar-rect {
-  height: 250px;
+/* Başlık / CTA bindirmesi (görselin üstünde) */
+.ad-overlay {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82), transparent);
+  color: #fff;
+  text-align: left;
 }
+.ad-overlay-title { font-size: 13px; font-weight: 800; line-height: 1.25; }
+.ad-overlay-cta { font-size: 11px; font-weight: 700; color: #ffd54a; margin-top: 2px; }
 
-.ad-box.sidebar-tall {
-  height: 600px;
+/* Yer tutucu (görsel yokken) */
+.ad-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 12px;
+  color: var(--text-muted);
+  opacity: 0.55;
 }
+.ad-box.fit-natural .ad-placeholder { position: static; min-height: 120px; }
+.ad-ph-tag { font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+.ad-ph-size { font-size: 10px; }
+.ad-ph-title { font-size: 15px; font-weight: 800; color: var(--text-secondary); }
+.ad-ph-desc { font-size: 11px; }
+.ad-ph-cta { font-size: 11px; font-weight: 700; color: var(--accent-red); }
 
-.ad-box.native {
+/* Native (yatay sponsorlu içerik) — kullanılırsa */
+.ad-box.native-row {
   display: flex;
   gap: 12px;
   padding: 12px;
   align-items: center;
-  height: auto;
+  aspect-ratio: auto;
 }
 
 .ad-native-img {

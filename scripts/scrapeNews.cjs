@@ -316,6 +316,13 @@ async function scrapeAll() {
   allScrapedNews.forEach(item => newsMap.set(item.id, item));
 
   const finalNewsList = Array.from(newsMap.values());
+
+  // Eski kayıtlarda 'source' alanı olmayabilir — yazar adından türet, o da
+  // yoksa markalı bir yedeğe düş. Böylece hiçbir haber kaynaksız kalmaz.
+  finalNewsList.forEach(item => {
+    if (!item.source) item.source = (item.author && item.author.name) || 'Söz Milletin';
+  });
+
   finalNewsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
   const sourceCounts = {};

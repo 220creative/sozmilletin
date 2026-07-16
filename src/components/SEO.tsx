@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { SITE_URL, SITE_NAME, absoluteUrl } from '../config';
 
 interface SEOProps {
   title?: string;
@@ -10,6 +11,7 @@ interface SEOProps {
   // Article specific JSON-LD fields
   articleData?: {
     publishedTime: string;
+    modifiedTime?: string;
     authorName: string;
     section: string;
   };
@@ -19,47 +21,49 @@ export const SEO = ({
   title = 'SÖZ MİLLETİN — Son Dakika Haberler, Kocaeli ve Türkiye Gündemi',
   description = 'Kocaeli ve Türkiye gündeminden son dakika haberleri, siyaset, spor, asayiş ve magazin. Bağımsız ve tarafsız habercilik.',
   keywords = 'haber, son dakika, kocaeli, gündem, siyaset, spor, asayiş',
-  image = 'https://sozmilletin.com/haber-placeholder.svg', // Ideal to use absolute URL
-  url = 'https://sozmilletin.com',
+  image = `${SITE_URL}/haber-placeholder.svg`,
+  url = SITE_URL,
   type = 'website',
   articleData
 }: SEOProps) => {
-  // Ensure absolute image URL
-  const absoluteImage = image.startsWith('http') ? image : `https://sozmilletin.com${image.startsWith('/') ? image : `/${image}`}`;
+  // Mutlak görsel URL'si (OG/Twitter kartları mutlak adres ister)
+  const absoluteImage = absoluteUrl(image);
 
   // Structured Data (JSON-LD)
   const schemaOrgJSONLD: any = [
     {
-      '@context': 'http://schema.org',
+      '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'Söz Milletin',
-      url: 'https://sozmilletin.com',
-      logo: 'https://sozmilletin.com/favicon.svg'
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/favicon.svg`
     }
   ];
 
   if (type === 'article' && articleData) {
     schemaOrgJSONLD.push({
-      '@context': 'http://schema.org',
+      '@context': 'https://schema.org',
       '@type': 'NewsArticle',
       mainEntityOfPage: {
         '@type': 'WebPage',
         '@id': url
       },
-      headline: title,
+      headline: title.length > 110 ? title.slice(0, 107) + '…' : title,
       image: [absoluteImage],
       datePublished: articleData.publishedTime,
-      dateModified: articleData.publishedTime,
+      dateModified: articleData.modifiedTime || articleData.publishedTime,
       author: {
-        '@type': 'Person',
-        name: articleData.authorName
+        '@type': 'Organization',
+        name: articleData.authorName,
+        url: SITE_URL
       },
       publisher: {
         '@type': 'Organization',
-        name: 'Söz Milletin',
+        name: SITE_NAME,
+        url: SITE_URL,
         logo: {
           '@type': 'ImageObject',
-          url: 'https://sozmilletin.com/favicon.svg'
+          url: `${SITE_URL}/favicon.svg`
         }
       },
       description: description
@@ -69,9 +73,11 @@ export const SEO = ({
   return (
     <Helmet>
       {/* Standart Meta Etiketleri */}
+      <html lang="tr" />
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
+      <link rel="canonical" href={url} />
 
       {/* OpenGraph / Facebook Meta Etiketleri */}
       <meta property="og:url" content={url} />
@@ -79,7 +85,8 @@ export const SEO = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={absoluteImage} />
-      <meta property="og:site_name" content="Söz Milletin" />
+      <meta property="og:site_name" content={SITE_NAME} />
+      <meta property="og:locale" content="tr_TR" />
 
       {/* Twitter Card Meta Etiketleri */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -91,6 +98,7 @@ export const SEO = ({
       {type === 'article' && articleData && (
         <>
           <meta property="article:published_time" content={articleData.publishedTime} />
+          <meta property="article:modified_time" content={articleData.modifiedTime || articleData.publishedTime} />
           <meta property="article:author" content={articleData.authorName} />
           <meta property="article:section" content={articleData.section} />
         </>

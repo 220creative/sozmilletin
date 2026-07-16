@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { NewsItem } from '../data/mockData';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
 
 interface BreakingNewsProps {
   newsItems: NewsItem[];
-  onNewsClick: (news: NewsItem) => void;
 }
 
-export const BreakingNews: React.FC<BreakingNewsProps> = ({ newsItems, onNewsClick }) => {
+export const BreakingNews: React.FC<BreakingNewsProps> = ({ newsItems }) => {
   const [index, setIndex] = useState(0);
 
   // 5 saniyede bir sonraki son dakika haberine geç (otomatik döngü)
@@ -44,7 +44,7 @@ export const BreakingNews: React.FC<BreakingNewsProps> = ({ newsItems, onNewsCli
           </button>
         </div>
 
-        <div className="breaking-content" onClick={() => onNewsClick(current)}>
+        <Link to={`/haber/${current.id}`} className="breaking-content card-link">
           <span className="breaking-time">{time}</span>
           <AnimatePresence mode="wait">
             <motion.span
@@ -58,9 +58,9 @@ export const BreakingNews: React.FC<BreakingNewsProps> = ({ newsItems, onNewsCli
               {current.title}
             </motion.span>
           </AnimatePresence>
-        </div>
+        </Link>
 
-        <button className="breaking-all">Tümü</button>
+        <Link to="/" className="breaking-all card-link">Tümü</Link>
       </div>
     </div>
   );

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/genSitemap.cjs",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/prerender.cjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "scrape": "node scripts/scrapeNews.cjs",

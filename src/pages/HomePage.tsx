@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { NewsCard } from '../components/NewsCard';
 import { BreakingNews } from '../components/BreakingNews';
@@ -16,7 +15,6 @@ interface HomePageProps {
   showSavedOnly: boolean;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
-  onView: (id: string) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -26,16 +24,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   showSavedOnly,
   searchQuery,
   setSearchQuery,
-  onView,
 }) => {
-  const navigate = useNavigate();
-
-  // Habere tıklanınca görüntülenmeyi artır ve kendi sayfasına git
-  const openNews = (news: NewsItem) => {
-    onView(news.id);
-    navigate(`/haber/${news.id}`);
-  };
-
   const breakingNews = newsList.slice(0, 4);
 
   const filteredNews = newsList.filter(news => {
@@ -82,9 +71,10 @@ export const HomePage: React.FC<HomePageProps> = ({
         description={settings.seoDescription}
         image={settings.ogImage}
       />
-      {settings.showBreaking && <BreakingNews newsItems={breakingNews} onNewsClick={openNews} />}
+      {settings.showBreaking && <BreakingNews newsItems={breakingNews} />}
 
       <main className="main-content">
+        <h1 className="sr-only">Söz Milletin — Kocaeli ve Türkiye Son Dakika Haberleri</h1>
         <AdZone type="leaderboard" className="ad-leaderboard" />
 
         {(showSavedOnly || searchQuery.trim() !== '') && (
@@ -102,12 +92,12 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="portal-layout">
             <div className="main-column">
               {!showSavedOnly && searchQuery.trim() === '' && heroNews && (
-                <NewsCard news={heroNews} variant="hero" onClick={() => openNews(heroNews)} />
+                <NewsCard news={heroNews} variant="hero" />
               )}
 
               <div className="news-grid-2col">
                 {gridNews.map((news) => (
-                  <NewsCard key={news.id} news={news} onClick={() => openNews(news)} />
+                  <NewsCard key={news.id} news={news} />
                 ))}
               </div>
             </div>
@@ -119,7 +109,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <h3 className="section-heading">En Çok Okunanlar</h3>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {trendingNews.map((news) => (
-                    <NewsCard key={`trend-${news.id}`} news={news} variant="sidebar" onClick={() => openNews(news)} />
+                    <NewsCard key={`trend-${news.id}`} news={news} variant="sidebar" />
                   ))}
                 </div>
               </div>
@@ -130,7 +120,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <h3 className="section-heading">Öne Çıkanlar</h3>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {newsList.slice(6, 11).map((news) => (
-                    <NewsCard key={`featured-${news.id}`} news={news} variant="sidebar" onClick={() => openNews(news)} />
+                    <NewsCard key={`featured-${news.id}`} news={news} variant="sidebar" />
                   ))}
                 </div>
               </div>

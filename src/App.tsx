@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
-import { AdminApp } from './admin/AdminApp';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+// Yönetim paneli yalnızca /admin açıldığında yüklenir (ana bundle'ı şişirmesin)
+const AdminApp = lazy(() => import('./admin/AdminApp').then(m => ({ default: m.AdminApp })));
 import { getMergedNews, getSettings, applyTheme, injectAnalytics } from './admin/adminStore';
 import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
@@ -9,6 +10,7 @@ import { Footer } from './components/Footer';
 import { AdZone } from './components/AdZone';
 import { HomePage } from './pages/HomePage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
+import { NotFound } from './pages/NotFound';
 import { mockNews } from './data/mockData';
 import scrapedNewsData from './data/scrapedNews.json';
 import type { NewsItem } from './data/mockData';
@@ -72,7 +74,9 @@ function App() {
   if (!mounted) return null;
 
   // Yönetim paneli: site başlık/çubukları olmadan tam ekran
-  if (location.pathname.startsWith('/admin')) return <AdminApp />;
+  if (location.pathname.startsWith('/admin')) {
+    return <Suspense fallback={null}><AdminApp /></Suspense>;
+  }
 
   return (
     <div className="app-container">
@@ -110,7 +114,6 @@ function App() {
                   showSavedOnly={showSavedOnly}
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
-                  onView={handleView}
                 />
               }
             />
@@ -125,7 +128,7 @@ function App() {
                 />
               }
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
 
