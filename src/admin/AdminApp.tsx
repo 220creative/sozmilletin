@@ -297,7 +297,7 @@ const AdsManager: React.FC = () => {
                         <input type="file" accept="image/*" hidden onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (file.size > 2 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 2MB.'); return; }
+                            if (file.size > 25 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 25MB.'); return; }
                             const reader = new FileReader();
                             reader.onload = (ev) => upd(i, { imageUrl: ev.target?.result as string });
                             reader.readAsDataURL(file);
