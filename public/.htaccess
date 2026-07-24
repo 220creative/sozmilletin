@@ -6,6 +6,13 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # HTTP -> HTTPS (kalıcı 301) — SSL sertifikası kurulu, yalnızca yönlendirme eklenir.
+  # Proxy/CDN arkasında da doğru çalışsın diye X-Forwarded-Proto de kontrol edilir.
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

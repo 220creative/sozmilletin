@@ -40,7 +40,8 @@ function headFor(item) {
   const url = `${SITE_URL}/haber/${item.id}`;
   const title = (item.seoTitle && item.seoTitle.trim()) || `${item.title} — SÖZ MİLLETİN`;
   const descRaw = (item.seoDescription && item.seoDescription.trim()) || item.summary || item.title || '';
-  const desc = descRaw.length > 200 ? descRaw.slice(0, 197) + '…' : descRaw;
+  // Google arama sonucu açıklamayı ~160 karakterde kırpar; o sınıra göre kısaltıyoruz.
+  const desc = descRaw.length > 160 ? descRaw.slice(0, 157) + '…' : descRaw;
   const image = absImage(item.image);
   const published = isoDate(item.timestamp);
   const author = (item.author && item.author.name) || SITE_NAME;
