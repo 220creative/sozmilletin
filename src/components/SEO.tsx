@@ -8,6 +8,8 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: 'website' | 'article';
+  /** true ise sayfa arama motorlarından gizlenir (admin, arama sonucu vb.) */
+  noindex?: boolean;
   // Article specific JSON-LD fields
   articleData?: {
     publishedTime: string;
@@ -24,8 +26,13 @@ export const SEO = ({
   image = `${SITE_URL}/haber-placeholder.svg`,
   url = SITE_URL,
   type = 'website',
+  noindex = false,
   articleData
 }: SEOProps) => {
+  // Haber sitesi için zengin önizleme: büyük görsel + tam snippet. noindex ise tümü gizli.
+  const robots = noindex
+    ? 'noindex, nofollow'
+    : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
   // Mutlak görsel URL'si (OG/Twitter kartları mutlak adres ister)
   const absoluteImage = absoluteUrl(image);
 
@@ -75,6 +82,7 @@ export const SEO = ({
       {/* Standart Meta Etiketleri */}
       <html lang="tr" />
       <title>{title}</title>
+      <meta name="robots" content={robots} />
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       <link rel="canonical" href={url} />

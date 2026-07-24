@@ -8,6 +8,7 @@ import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
 import { Footer } from './components/Footer';
 import { AdZone } from './components/AdZone';
+import { SEO } from './components/SEO';
 import { HomePage } from './pages/HomePage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
 import { NotFound } from './pages/NotFound';
@@ -75,7 +76,12 @@ function App() {
 
   // Yönetim paneli: site başlık/çubukları olmadan tam ekran
   if (location.pathname.startsWith('/admin')) {
-    return <Suspense fallback={null}><AdminApp /></Suspense>;
+    return (
+      <Suspense fallback={null}>
+        <SEO title="Yönetim Paneli — Söz Milletin" noindex />
+        <AdminApp />
+      </Suspense>
+    );
   }
 
   return (
