@@ -144,7 +144,21 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
         </div>
       </div>
 
-      <label className="admin-label">Görsel URL</label>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <label className="admin-label" style={{ margin: 0 }}>Görsel URL</label>
+        <label className="admin-btn-ghost" style={{ cursor: 'pointer', fontSize: '12px', padding: '4px 10px', margin: 0 }}>
+          <Upload size={14} style={{ marginRight: 6 }} /> Bilgisayardan Seç
+          <input type="file" accept="image/*" hidden onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              if (file.size > 25 * 1024 * 1024) { alert('Dosya çok büyük. Maksimum 25MB.'); return; }
+              const reader = new FileReader();
+              reader.onload = (ev) => setImage(ev.target?.result as string);
+              reader.readAsDataURL(file);
+            }
+          }} />
+        </label>
+      </div>
       <input className="admin-input" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://... (boşsa markalı yer tutucu)" />
       {image.trim() && <img src={image} alt="" className="admin-img-preview" onError={(e) => (e.currentTarget.style.display = 'none')} onLoad={(e) => (e.currentTarget.style.display = 'block')} />}
 
