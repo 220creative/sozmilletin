@@ -61,4 +61,5 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          state-name: .ftp-deploy-sync-state-v2.json
           dangerous-clean-slate: false   # Mevcut dosyaları silmeden günceller
