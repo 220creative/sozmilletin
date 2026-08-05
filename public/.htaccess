@@ -3,6 +3,16 @@
 # 404 yerine index.html sunulur; yönlendirmeyi React Router devralır.
 # Not: /haber/{id}/ prerender edilmiş gerçek bir klasör olduğundan (!-d) buraya
 # takılmaz; kendi statik index.html'i (doğru OG etiketleriyle) sunulur.
+# GÜVENLİK: Hassas/gizli dosyalara doğrudan erişimi engelle.
+# (FTP deploy durum dosyası, kaynak arşivleri, .DS_Store, gizli dosyalar vb.)
+# .ftp-deploy-sync-state-v2.json sunucuda tutulur ve tüm dosya ağacını sızdırır.
+<FilesMatch "(^\.|\.(zip|log|bak|old|sql|env|ini)$|ftp-deploy-sync-state)">
+  Require all denied
+</FilesMatch>
+<Files ".DS_Store">
+  Require all denied
+</Files>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
