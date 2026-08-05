@@ -17,6 +17,7 @@ const SITE_NAME = 'Söz Milletin';
 const DIST = path.join(__dirname, '..', 'dist');
 const TEMPLATE = path.join(DIST, 'index.html');
 const NEWS_FILE = path.join(__dirname, '..', 'src', 'data', 'scrapedNews.json');
+const ADMIN_FILE = path.join(__dirname, '..', 'src', 'data', 'adminData.json');
 
 const esc = (s) =>
   String(s == null ? '' : s)
@@ -101,13 +102,40 @@ if (!MARKER.test(template)) {
   process.exit(0);
 }
 
-let news = [];
+let scraped = [];
 try {
-  news = JSON.parse(fs.readFileSync(NEWS_FILE, 'utf-8'));
+  scraped = JSON.parse(fs.readFileSync(NEWS_FILE, 'utf-8'));
 } catch (e) {
   console.error('prerender: haber dosyası okunamadı:', e.message);
   process.exit(0);
 }
+
+// Manuel (elle eklenen) haberler + düzenlemeler + gizlenenler adminData.json'da.
+// Bunları da işleyerek manuel haberlere de statik sayfa üretiyoruz; aksi halde
+// /haber/{manuel-id} linki 404 verir (SPA fallback dışında gerçek sayfa yok).
+// Bu, src/admin/adminStore.ts içindeki getMergedNews() ile aynı mantığı yansıtır.
+let manual = [];
+let edits = {};
+let hidden = new Set();
+try {
+  const admin = JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf-8'));
+  if (Array.isArray(admin.manual)) manual = admin.manual;
+  if (admin.edits && typeof admin.edits === 'object') edits = admin.edits;
+  if (Array.isArray(admin.hidden)) hidden = new Set(admin.hidden);
+} catch (e) {
+  console.warn('prerender: adminData.json okunamadı (manuel haberler atlanıyor):', e.message);
+}
+
+// Birleştir: manuel önce, sonra çekilenler; id'ye göre tekilleştir.
+const byId = new Map();
+for (const n of [...manual, ...scraped]) {
+  if (n && n.id && !byId.has(n.id)) byId.set(n.id, n);
+}
+const now = Date.now();
+const news = Array.from(byId.values())
+  .map((n) => (edits[n.id] ? { ...n, ...edits[n.id] } : n))
+  .filter((n) => !hidden.has(n.id))                       // gizlenenlere sayfa üretme
+  .filter((n) => !n.publishAt || Number(n.publishAt) <= now); // ileri tarihli (zamanlanmış) olanları atla
 
 let count = 0;
 for (const item of news) {

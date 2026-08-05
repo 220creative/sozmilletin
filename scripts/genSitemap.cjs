@@ -8,6 +8,7 @@ const path = require('path');
 
 const SITE_URL = 'https://xn--szmilletin-ecb.com';
 const NEWS_FILE = path.join(__dirname, '..', 'src', 'data', 'scrapedNews.json');
+const ADMIN_FILE = path.join(__dirname, '..', 'src', 'data', 'adminData.json');
 const OUT_FILE = path.join(__dirname, '..', 'public', 'sitemap.xml');
 
 function xmlEscape(s) {
@@ -19,12 +20,32 @@ function isoDate(ts) {
   return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
-let news = [];
+let scraped = [];
 try {
-  news = JSON.parse(fs.readFileSync(NEWS_FILE, 'utf-8'));
+  scraped = JSON.parse(fs.readFileSync(NEWS_FILE, 'utf-8'));
 } catch (e) {
   console.error('sitemap: haber dosyası okunamadı:', e.message);
 }
+
+// Manuel haberleri + gizlenenleri adminData.json'dan al (prerender ile tutarlı).
+let manual = [];
+let hidden = new Set();
+try {
+  const admin = JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf-8'));
+  if (Array.isArray(admin.manual)) manual = admin.manual;
+  if (Array.isArray(admin.hidden)) hidden = new Set(admin.hidden);
+} catch (e) {
+  console.warn('sitemap: adminData.json okunamadı (manuel haberler atlanıyor):', e.message);
+}
+
+const nowTs = Date.now();
+const byId = new Map();
+for (const n of [...manual, ...scraped]) {
+  if (n && n.id && !byId.has(n.id)) byId.set(n.id, n);
+}
+const news = Array.from(byId.values())
+  .filter((n) => !hidden.has(n.id))
+  .filter((n) => !n.publishAt || Number(n.publishAt) <= nowTs);
 
 const now = new Date().toISOString();
 const urls = [];
