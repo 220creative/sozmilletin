@@ -12,6 +12,13 @@
 <Files ".DS_Store">
   Require all denied
 </Files>
+# Kullanılmayan/riskli dosyalar: fiziksel olarak sunucuda kalsalar bile erişilemez.
+# upload.php admin tarafından kullanılmıyor (görseller base64 gömülüyor) ve eski
+# sürümü rastgele dosya yüklemeye (RCE) açıktı. web.config ise IIS'e ait, Apache'de
+# işlevsiz. FTP deploy eski dosyaları silmediği için erişimi burada kapatıyoruz.
+<FilesMatch "^(upload\.php|web\.config)$">
+  Require all denied
+</FilesMatch>
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
