@@ -152,31 +152,69 @@ function App() {
 
       <Footer />
 
-      {searchOpen && (
-        <div className="modal-overlay" onClick={() => setSearchOpen(false)}>
-          <div
-            style={{ width: '100%', maxWidth: '600px', background: 'var(--bg-primary)', padding: '30px', borderRadius: '8px', position: 'relative' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button onClick={() => setSearchOpen(false)} className="modal-close-btn" style={{ top: '10px', right: '10px' }}>
-              <X size={20} />
-            </button>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', marginBottom: '20px' }}>Haber Ara</h2>
-            <div style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid var(--accent-red)', paddingBottom: '10px' }}>
-              <Search size={20} color="var(--accent-red)" style={{ marginRight: '10px' }} />
-              <input
-                autoFocus
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && setSearchOpen(false)}
-                placeholder="Aranacak kelimeyi yazın..."
-                style={{ flex: 1, border: 'none', background: 'none', fontSize: '18px', color: 'var(--text-primary)', outline: 'none' }}
-              />
+      {searchOpen && (() => {
+        const q = searchQuery.trim().toLowerCase();
+        // Canlı sonuçlar: yazdıkça modal içinde göster (kullanıcı sonuçları görmek
+        // için modalı kapatmak zorunda kalmasın). En fazla 20 eşleşme listelenir.
+        const results = q
+          ? newsList.filter(n =>
+              n.title.toLowerCase().includes(q) || n.summary.toLowerCase().includes(q)
+            ).slice(0, 20)
+          : [];
+        const openArticle = (id: string) => {
+          setSearchOpen(false);
+          navigate(`/haber/${id}`);
+        };
+        return (
+          <div className="modal-overlay" onClick={() => setSearchOpen(false)}>
+            <div
+              style={{ width: '100%', maxWidth: '600px', maxHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)', padding: '30px', borderRadius: '8px', position: 'relative' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button onClick={() => setSearchOpen(false)} className="modal-close-btn" style={{ top: '10px', right: '10px' }}>
+                <X size={20} />
+              </button>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', marginBottom: '20px' }}>Haber Ara</h2>
+              <div style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid var(--accent-red)', paddingBottom: '10px' }}>
+                <Search size={20} color="var(--accent-red)" style={{ marginRight: '10px' }} />
+                <input
+                  autoFocus
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) openArticle(results[0].id); }}
+                  placeholder="Aranacak kelimeyi yazın..."
+                  style={{ flex: 1, border: 'none', background: 'none', fontSize: '18px', color: 'var(--text-primary)', outline: 'none' }}
+                />
+              </div>
+
+              {q && (
+                <div style={{ marginTop: '16px', overflowY: 'auto' }}>
+                  {results.length > 0 ? (
+                    results.map(n => (
+                      <button
+                        key={n.id}
+                        onClick={() => openArticle(n.id)}
+                        style={{ display: 'flex', gap: '12px', width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid var(--border-color)', padding: '10px 0', cursor: 'pointer', alignItems: 'center' }}
+                      >
+                        <img src={n.image} alt="" loading="lazy" style={{ width: '64px', height: '48px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />
+                        <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--accent-red)', fontWeight: 700 }}>{n.category}</span>
+                          <span style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.3 }}>{n.title}</span>
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p style={{ padding: '20px 0', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      "{searchQuery}" için sonuç bulunamadı.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
