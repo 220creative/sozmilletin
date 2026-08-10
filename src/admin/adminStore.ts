@@ -22,6 +22,9 @@ const K = {
   ads: 'admin_ads',
   settings: 'admin_settings',
   categories: 'admin_categories',
+  users: 'admin_users',
+  role: 'admin_role',
+  user: 'admin_user',
 };
 
 // Not: Depo herkese açık olduğu için buradaki değer gizli sayılmaz; ilk girişten
@@ -43,15 +46,66 @@ function write(key: string, val: unknown) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* kota dolu vb. */ }
 }
 
-/* ================= Kimlik doğrulama ================= */
+/* ================= Kimlik doğrulama & Roller ================= */
+// UYARI: Kimlik doğrulama tamamen istemci tarafındadır ve depo herkese açıktır;
+// bu gerçek bir güvenlik katmanı DEĞİL, "yumuşak kapı"dır. Parolalar adminData.json'a
+// SHA-256 hash olarak yayınlanır (düz metin değil) ama güçlü/benzersiz parola şarttır.
+// Asıl hassas olan GitHub token'ı hiçbir zaman yayınlanmaz; yalnızca tarayıcıda kalır.
+export type Role = 'admin' | 'editor';
+export interface AdminUser { username: string; passHash: string; role: Role }
+
+export async function sha256(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+export function getUsers(): AdminUser[] { return read<AdminUser[]>(K.users, (PUB.users as AdminUser[]) || []); }
+export function saveUsers(list: AdminUser[]) { write(K.users, list); }
+export async function addUser(username: string, password: string, role: Role): Promise<{ ok: boolean; msg: string }> {
+  const u = username.trim();
+  if (!u || !password) return { ok: false, msg: 'Kullanıcı adı ve parola gerekli.' };
+  const list = getUsers();
+  if (list.some(x => x.username.toLowerCase() === u.toLowerCase())) return { ok: false, msg: 'Bu kullanıcı adı zaten var.' };
+  list.push({ username: u, passHash: await sha256(password), role });
+  saveUsers(list);
+  return { ok: true, msg: 'Kullanıcı eklendi. "Yayınla" ile tüm cihazlarda aktifleşir.' };
+}
+export function removeUser(username: string) { saveUsers(getUsers().filter(u => u.username !== username)); }
+
 export function getPassword(): string { return localStorage.getItem(K.password) || DEFAULT_PASSWORD; }
 export function setPassword(p: string) { if (p.trim()) localStorage.setItem(K.password, p.trim()); }
 export function isAuthed(): boolean { return sessionStorage.getItem(K.session) === '1'; }
-export function login(p: string): boolean {
-  if (p === getPassword()) { sessionStorage.setItem(K.session, '1'); return true; }
-  return false;
+export function getRole(): Role { return (sessionStorage.getItem(K.role) as Role) || 'admin'; }
+export function getCurrentUser(): string { return sessionStorage.getItem(K.user) || 'admin'; }
+
+// Giriş: önce kullanıcı listesi (hash karşılaştırması), sonra eski tekil admin parolası.
+export async function login(username: string, password: string): Promise<Role | null> {
+  const uname = username.trim();
+  const list = getUsers();
+  if (list.length && password) {
+    const hash = await sha256(password);
+    const u = list.find(x => x.username.toLowerCase() === uname.toLowerCase() && x.passHash === hash);
+    if (u) {
+      sessionStorage.setItem(K.session, '1');
+      sessionStorage.setItem(K.role, u.role);
+      sessionStorage.setItem(K.user, u.username);
+      return u.role;
+    }
+  }
+  // Geriye dönük uyumluluk: tekil admin parolası (kullanıcı adı boş veya "admin")
+  if (password === getPassword() && (uname === '' || uname.toLowerCase() === 'admin')) {
+    sessionStorage.setItem(K.session, '1');
+    sessionStorage.setItem(K.role, 'admin');
+    sessionStorage.setItem(K.user, 'admin');
+    return 'admin';
+  }
+  return null;
 }
-export function logout() { sessionStorage.removeItem(K.session); }
+export function logout() {
+  sessionStorage.removeItem(K.session);
+  sessionStorage.removeItem(K.role);
+  sessionStorage.removeItem(K.user);
+}
 
 /* ================= Site Ayarları / SEO / Görünüm ================= */
 export interface SiteSettings {
@@ -267,6 +321,7 @@ export async function publish(): Promise<{ ok: boolean; msg: string }> {
     ads: getAdSlots(),
     settings: getSettings(),
     categories: getCategories(),
+    users: getUsers(),
   };
 
   const api = `https://api.github.com/repos/${REPO}/contents/src/data/adminData.json`;

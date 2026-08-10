@@ -7,13 +7,16 @@ import type { AdSlot, SiteSettings } from './adminStore';
 import {
   Lock, LogOut, Plus, Search, Pencil, Trash2, Eye, EyeOff, Star, Pin, Newspaper,
   Megaphone, Settings, ArrowLeft, Save, Home, LayoutDashboard, Tag, Palette,
-  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, UploadCloud, Menu, X, Bot, Sparkles
+  Search as SeoIcon, Clock, Download, Upload, RotateCcw, FileText, UploadCloud, Menu, X, Bot, Sparkles, Users, Trash
 } from 'lucide-react';
 
 const BASE_NEWS: NewsItem[] = (scrapedNewsData && (scrapedNewsData as NewsItem[]).length > 0)
   ? (scrapedNewsData as NewsItem[]) : mockNews;
 
-type View = 'dash' | 'list' | 'form' | 'ads' | 'cats' | 'seo' | 'look' | 'backup' | 'publish' | 'ai';
+type View = 'dash' | 'list' | 'form' | 'ads' | 'cats' | 'seo' | 'look' | 'backup' | 'publish' | 'ai' | 'users';
+
+// Editörün erişebildiği görünümler (sadece haber yazma akışı + yayınlama).
+const EDITOR_VIEWS: View[] = ['dash', 'list', 'form', 'publish'];
 
 const toLocalInput = (ts?: number) => {
   if (!ts) return '';
@@ -23,18 +26,27 @@ const toLocalInput = (ts?: number) => {
 
 /* ================= Giriş ================= */
 const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
-  const [pw, setPw] = useState(''); const [err, setErr] = useState(false);
-  const submit = (e: React.FormEvent) => { e.preventDefault(); if (store.login(pw)) onLogin(); else { setErr(true); setPw(''); } };
+  const [uname, setUname] = useState(''); const [pw, setPw] = useState('');
+  const [err, setErr] = useState(false); const [busy, setBusy] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const role = await store.login(uname, pw);
+    setBusy(false);
+    if (role) onLogin(); else { setErr(true); setPw(''); }
+  };
   return (
     <div className="admin-login">
       <form className="admin-login-box" onSubmit={submit}>
         <div className="admin-login-icon"><Lock size={26} /></div>
         <h1>Yönetim Paneli</h1>
         <p className="admin-muted">SÖZ MİLLETİN — İçerik Yönetimi</p>
-        <input type="password" autoFocus placeholder="Parola" value={pw}
-          onChange={(e) => { setPw(e.target.value); setErr(false); }} className={err ? 'admin-input err' : 'admin-input'} />
-        {err && <div className="admin-err-text">Parola hatalı.</div>}
-        <button type="submit" className="admin-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Giriş Yap</button>
+        <input type="text" autoFocus placeholder="Kullanıcı adı (admin için boş bırakılabilir)" value={uname}
+          onChange={(e) => { setUname(e.target.value); setErr(false); }} className="admin-input" autoComplete="username" />
+        <input type="password" placeholder="Parola" value={pw}
+          onChange={(e) => { setPw(e.target.value); setErr(false); }} className={err ? 'admin-input err' : 'admin-input'} autoComplete="current-password" />
+        {err && <div className="admin-err-text">Kullanıcı adı veya parola hatalı.</div>}
+        <button type="submit" disabled={busy} className="admin-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>{busy ? 'Kontrol ediliyor…' : 'Giriş Yap'}</button>
       </form>
     </div>
   );
@@ -657,6 +669,79 @@ const Dashboard: React.FC<{ go: (v: View, edit?: NewsItem | null) => void }> = (
   );
 };
 
+/* ================= Kullanıcılar (Roller) ================= */
+const UserManager: React.FC = () => {
+  const [, force] = useState(0);
+  const refresh = () => force(x => x + 1);
+  const [uname, setUname] = useState('');
+  const [pw, setPw] = useState('');
+  const [urole, setURole] = useState<store.Role>('editor');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+  const users = store.getUsers();
+
+  const add = async () => {
+    setBusy(true);
+    const r = await store.addUser(uname, pw, urole);
+    setBusy(false);
+    setMsg(r.msg);
+    if (r.ok) { setUname(''); setPw(''); setURole('editor'); refresh(); }
+  };
+
+  return (
+    <div>
+      <h2 style={{ marginBottom: 18 }}>Kullanıcılar</h2>
+
+      <div className="admin-ad-card" style={{ borderLeft: '3px solid var(--accent-red, #b91c1c)' }}>
+        <p className="admin-muted" style={{ margin: 0 }}>
+          ⚠️ Giriş tamamen tarayıcı tarafındadır ve depo herkese açıktır — bu güçlü bir güvenlik değil,
+          "yumuşak kapı"dır. Parolalar hash'lenerek saklanır; yine de <b>güçlü ve benzersiz</b> parola kullanın.
+          Yeni kullanıcının tüm cihazlarda geçerli olması için değişiklikten sonra <b>"Yayınla"</b> deyin.
+        </p>
+      </div>
+
+      <div className="admin-ad-card">
+        <div className="admin-fieldset-title"><Plus size={14} /> Yeni Kullanıcı</div>
+        <label className="admin-label">Kullanıcı adı</label>
+        <input className="admin-input" value={uname} onChange={(e) => { setUname(e.target.value); setMsg(''); }} placeholder="örn. muhabir1" />
+        <label className="admin-label">Parola</label>
+        <input className="admin-input" type="text" value={pw} onChange={(e) => { setPw(e.target.value); setMsg(''); }} placeholder="güçlü bir parola" />
+        <label className="admin-label">Rol</label>
+        <select className="admin-input" value={urole} onChange={(e) => setURole(e.target.value as store.Role)}>
+          <option value="editor">Editör (sadece haber yazma + yayınlama)</option>
+          <option value="admin">Admin (tam yetki)</option>
+        </select>
+        <button className="admin-btn-primary" style={{ marginTop: 12 }} disabled={busy} onClick={add}>
+          {busy ? 'Ekleniyor…' : 'Kullanıcı Ekle'}
+        </button>
+        {msg && <div className="admin-ok" style={{ marginTop: 10 }}>{msg}</div>}
+      </div>
+
+      <div className="admin-ad-card">
+        <div className="admin-fieldset-title"><Users size={14} /> Tanımlı Kullanıcılar ({users.length})</div>
+        {users.length === 0 ? (
+          <p className="admin-muted" style={{ margin: 0 }}>
+            Henüz ek kullanıcı yok. (Varsayılan admin, tekil parolayla girer — kullanıcı adı boş veya "admin".)
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {users.map(u => (
+              <div key={u.username} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
+                <span style={{ fontWeight: 600 }}>{u.username}</span>
+                <span className="badge cat" style={{ fontSize: 11 }}>{u.role === 'admin' ? 'Admin' : 'Editör'}</span>
+                <button className="admin-btn-danger" style={{ marginLeft: 'auto', padding: '4px 10px' }}
+                  onClick={() => { if (confirm(`"${u.username}" silinsin mi?`)) { store.removeUser(u.username); refresh(); } }}>
+                  <Trash size={14} /> Sil
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 /* ================= Ana Panel ================= */
 export const AdminApp: React.FC = () => {
   const [authed, setAuthed] = useState(store.isAuthed());
@@ -670,6 +755,11 @@ export const AdminApp: React.FC = () => {
 
   if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
 
+  const role = store.getRole();
+  const isEditor = role === 'editor';
+  // Editör kısıtlı görünümler dışına çıkamaz (menüden gizli olsa da doğrudan erişim engellenir).
+  const activeView: View = isEditor && !EDITOR_VIEWS.includes(view) ? 'list' : view;
+
   const merged = store.getMergedNews(BASE_NEWS, { includeScheduled: true });
   const heroId = store.getHeroId();
   const cats = store.getCategories();
@@ -681,7 +771,7 @@ export const AdminApp: React.FC = () => {
   const go = (v: View, edit: NewsItem | null = null) => { setEditing(edit); setView(v); setIsMobileMenuOpen(false); };
   const afterForm = () => { setView('list'); refresh(); };
 
-  const nav = [
+  const fullNav = [
     { v: 'dash', label: 'Panel', icon: LayoutDashboard },
     { v: 'list', label: 'Haberler', icon: Newspaper },
     { v: 'ai', label: 'Yapay Zeka', icon: Bot },
@@ -689,8 +779,11 @@ export const AdminApp: React.FC = () => {
     { v: 'cats', label: 'Kategoriler', icon: Tag },
     { v: 'seo', label: 'SEO & Site', icon: SeoIcon },
     { v: 'look', label: 'Görünüm', icon: Palette },
+    { v: 'users', label: 'Kullanıcılar', icon: Users },
     { v: 'backup', label: 'Yedek & Ayarlar', icon: Settings },
   ];
+  // Editör yalnızca haber yazma akışını görür.
+  const nav = isEditor ? fullNav.filter(n => EDITOR_VIEWS.includes(n.v as View)) : fullNav;
 
   return (
     <div className="admin-root">
@@ -714,27 +807,31 @@ export const AdminApp: React.FC = () => {
         <nav>
           <button className="hl" onClick={() => go('form', null)}><Plus size={17} /> <span>Yeni Haber</span></button>
           {nav.map(n => { const I = n.icon; return (
-            <button key={n.v} className={view === n.v ? 'active' : ''} onClick={() => go(n.v as View)}><I size={17} /> <span>{n.label}</span></button>
+            <button key={n.v} className={activeView === n.v ? 'active' : ''} onClick={() => go(n.v as View)}><I size={17} /> <span>{n.label}</span></button>
           ); })}
         </nav>
         <div className="admin-sidebar-bottom">
+          <div className="admin-side-user" style={{ padding: '8px 12px', fontSize: 12, opacity: 0.7 }}>
+            {store.getCurrentUser()} · {isEditor ? 'Editör' : 'Admin'}
+          </div>
           <a href="/" className="admin-side-link"><Home size={16} /> <span>Siteyi Gör</span></a>
           <button className="admin-side-link" onClick={() => { store.logout(); setAuthed(false); }}><LogOut size={16} /> <span>Çıkış</span></button>
         </div>
       </aside>
 
       <main className="admin-main">
-        {view === 'dash' && <Dashboard go={go} />}
-        {view === 'publish' && <PublishPanel />}
-        {view === 'form' && <NewsForm editing={editing} onDone={afterForm} onCancel={() => setView('list')} />}
-        {view === 'ads' && <AdsManager />}
-        {view === 'ai' && <AiSettings />}
-        {view === 'cats' && <CategoryManager />}
-        {view === 'seo' && <SeoSettings />}
-        {view === 'look' && <LookSettings />}
-        {view === 'backup' && <BackupSettings />}
+        {activeView === 'dash' && <Dashboard go={go} />}
+        {activeView === 'publish' && <PublishPanel />}
+        {activeView === 'form' && <NewsForm editing={editing} onDone={afterForm} onCancel={() => setView('list')} />}
+        {activeView === 'ads' && !isEditor && <AdsManager />}
+        {activeView === 'ai' && !isEditor && <AiSettings />}
+        {activeView === 'cats' && !isEditor && <CategoryManager />}
+        {activeView === 'seo' && !isEditor && <SeoSettings />}
+        {activeView === 'look' && !isEditor && <LookSettings />}
+        {activeView === 'users' && !isEditor && <UserManager />}
+        {activeView === 'backup' && !isEditor && <BackupSettings />}
 
-        {view === 'list' && (
+        {activeView === 'list' && (
           <>
             <div className="admin-section-head">
               <h2>Haberler <span className="admin-count">{merged.length}</span></h2>
@@ -770,9 +867,9 @@ export const AdminApp: React.FC = () => {
                     </div>
                     <div className="admin-news-actions">
                       <button title="Düzenle" onClick={() => go('form', n)}><Pencil size={15} /></button>
-                      <button title="Manşet yap" className={isHero ? 'on' : ''} onClick={() => { store.setHeroId(isHero ? null : n.id); refresh(); }}><Star size={15} /></button>
-                      <button title="Öne çıkar" className={pinned ? 'on' : ''} onClick={() => { store.togglePinned(n.id); refresh(); }}><Pin size={15} /></button>
-                      <button title={hidden ? 'Göster' : 'Gizle'} onClick={() => { store.toggleHidden(n.id); refresh(); }}>{hidden ? <Eye size={15} /> : <EyeOff size={15} />}</button>
+                      {!isEditor && <button title="Manşet yap" className={isHero ? 'on' : ''} onClick={() => { store.setHeroId(isHero ? null : n.id); refresh(); }}><Star size={15} /></button>}
+                      {!isEditor && <button title="Öne çıkar" className={pinned ? 'on' : ''} onClick={() => { store.togglePinned(n.id); refresh(); }}><Pin size={15} /></button>}
+                      {!isEditor && <button title={hidden ? 'Göster' : 'Gizle'} onClick={() => { store.toggleHidden(n.id); refresh(); }}>{hidden ? <Eye size={15} /> : <EyeOff size={15} />}</button>}
                       {manual && <button title="Sil" className="danger" onClick={() => { if (confirm('Bu haber silinsin mi?')) { store.deleteManualNews(n.id); refresh(); } }}><Trash2 size={15} /></button>}
                     </div>
                   </div>
