@@ -452,11 +452,13 @@ export function slugify(s: string): string {
 }
 export function makeNewsItem(input: {
   id?: string; title: string; summary?: string; content: string[];
-  category?: string; image?: string; author?: string; date?: string;
+  category?: string; image?: string; images?: string[]; video?: string;
+  author?: string; date?: string;
   isBreaking?: boolean; isHero?: boolean; tags?: string[];
   seoTitle?: string; seoDescription?: string; publishAt?: number;
 }): NewsItem {
   const words = input.content.join(' ').split(/\s+/).filter(Boolean).length;
+  const gallery = (input.images || []).map(s => s.trim()).filter(Boolean);
   return {
     id: input.id || 'manual-' + Date.now(),
     title: input.title.trim(),
@@ -464,6 +466,8 @@ export function makeNewsItem(input: {
     content: input.content.length ? input.content : [input.title],
     category: input.category || 'Gündem',
     image: input.image?.trim() || '/haber-placeholder.svg',
+    images: gallery.length ? gallery : undefined,
+    video: input.video?.trim() || undefined,
     date: input.date || todayTR(),
     author: { name: input.author?.trim() || 'Söz Milletin', avatar: '/haber-placeholder.svg' },
     views: 0, likes: 0, comments: [],

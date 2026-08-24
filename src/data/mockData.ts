@@ -12,7 +12,9 @@ export interface NewsItem {
   summary: string;
   content: string[];
   category: string;
-  image: string;
+  image: string;             // kapak görseli (kartlar, OG/paylaşım ve manşet bunu kullanır)
+  images?: string[];         // ek galeri görselleri (kapak dışında, haber detayında gösterilir)
+  video?: string;            // isteğe bağlı video: mp4/webm dosya URL'si veya YouTube/Vimeo bağlantısı
   link?: string;
   date: string;
   author: {

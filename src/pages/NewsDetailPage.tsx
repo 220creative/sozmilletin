@@ -13,6 +13,48 @@ import {
 
 const PLACEHOLDER = '/haber-placeholder.svg';
 
+// Video bağlantısını uygun oynatıcıya çevir: YouTube/Vimeo → gömülü iframe,
+// doğrudan dosya (mp4/webm/ogg) → <video> oynatıcı. Tanınmazsa null (gösterilmez).
+const youtubeId = (url: string): string | null => {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+};
+const vimeoId = (url: string): string | null => {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m ? m[1] : null;
+};
+const VideoEmbed: React.FC<{ url: string; title: string }> = ({ url, title }) => {
+  const u = url.trim();
+  if (!u) return null;
+  const yt = youtubeId(u);
+  if (yt) {
+    return (
+      <div className="article-video article-video--embed">
+        <iframe src={`https://www.youtube-nocookie.com/embed/${yt}`} title={title}
+          loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+      </div>
+    );
+  }
+  const vm = vimeoId(u);
+  if (vm) {
+    return (
+      <div className="article-video article-video--embed">
+        <iframe src={`https://player.vimeo.com/video/${vm}`} title={title}
+          loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+      </div>
+    );
+  }
+  if (/\.(mp4|webm|ogg|ogv|m4v)(\?|#|$)/i.test(u)) {
+    return (
+      <div className="article-video">
+        <video src={u} controls preload="metadata" playsInline />
+      </div>
+    );
+  }
+  return null;
+};
+
 interface NewsDetailPageProps {
   newsList: NewsItem[];
   savedNewsIds: string[];
@@ -198,9 +240,21 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedN
             <img src={news.image} alt={news.title} onError={imgFallback} loading="eager" />
           </div>
 
+          {news.video && <VideoEmbed url={news.video} title={news.title} />}
+
           <div className="article-content">
             {news.content.map((p, i) => <p key={i}>{p}</p>)}
           </div>
+
+          {news.images && news.images.length > 0 && (
+            <div className="article-gallery">
+              {news.images.map((src, i) => (
+                <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="article-gallery-item">
+                  <img src={src} alt={`${news.title} — görsel ${i + 2}`} loading="lazy" onError={imgFallback} />
+                </a>
+              ))}
+            </div>
+          )}
 
           {news.link && (
             <a href={news.link} target="_blank" rel="noopener noreferrer" className="source-link">

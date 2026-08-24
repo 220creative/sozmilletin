@@ -60,6 +60,8 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
   const [body, setBody] = useState((editing?.content || []).join('\n\n'));
   const [category, setCategory] = useState(editing?.category || 'Gündem');
   const [image, setImage] = useState(editing?.image && editing.image !== '/haber-placeholder.svg' ? editing.image : '');
+  const [images, setImages] = useState((editing?.images || []).join('\n'));   // ek galeri görselleri (her satır bir URL)
+  const [video, setVideo] = useState(editing?.video || '');                    // isteğe bağlı video URL'si
   const [author, setAuthor] = useState(editing?.author?.name || 'Söz Milletin');
   const [tags, setTags] = useState((editing?.tags || []).join(', '));
   const [isBreaking, setIsBreaking] = useState(!!editing?.isBreaking);
@@ -76,6 +78,8 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
     if (!title.trim() || !body.trim()) return;
     const content = body.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     const tagArr = tags.split(',').map(t => t.trim()).filter(Boolean);
+    const imageArr = images.split('\n').map(s => s.trim()).filter(Boolean);   // ek galeri görselleri
+    const videoUrl = video.trim();
     const pubTs = publishAt ? new Date(publishAt).getTime() : undefined;
     let id = editing?.id;
 
@@ -83,11 +87,13 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
       store.setEdit(editing.id, {
         title: title.trim(), summary: summary.trim() || content[0], content, category,
         image: image.trim() || editing.image,
+        images: imageArr.length ? imageArr : undefined,
+        video: videoUrl || undefined,
         author: { name: author.trim() || editing.author.name, avatar: editing.author.avatar },
         isBreaking, tags: tagArr, seoTitle: seoTitle.trim(), seoDescription: seoDesc.trim(), publishAt: pubTs,
       });
     } else {
-      const item = store.makeNewsItem({ id, title, summary, content, category, image, author, isBreaking, tags: tagArr, seoTitle, seoDescription: seoDesc, publishAt: pubTs, date: editing?.date });
+      const item = store.makeNewsItem({ id, title, summary, content, category, image, images: imageArr, video: videoUrl, author, isBreaking, tags: tagArr, seoTitle, seoDescription: seoDesc, publishAt: pubTs, date: editing?.date });
       store.upsertManualNews(item);
       id = item.id;
     }
@@ -173,6 +179,34 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
       </div>
       <input className="admin-input" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://... (boşsa markalı yer tutucu)" />
       {image.trim() && <img src={image} alt="" className="admin-img-preview" onError={(e) => (e.currentTarget.style.display = 'none')} onLoad={(e) => (e.currentTarget.style.display = 'block')} />}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '14px 0 6px' }}>
+        <label className="admin-label" style={{ margin: 0 }}>Ek Görseller — Galeri <span className="admin-muted">(her satıra bir URL)</span></label>
+        <label className="admin-btn-ghost" style={{ cursor: 'pointer', fontSize: '12px', padding: '4px 10px', margin: 0 }}>
+          <Upload size={14} style={{ marginRight: 6 }} /> Bilgisayardan Seç
+          <input type="file" accept="image/*" multiple hidden onChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            files.forEach(file => {
+              if (file.size > 25 * 1024 * 1024) { alert(`${file.name}: dosya çok büyük (Maksimum 25MB).`); return; }
+              const reader = new FileReader();
+              reader.onload = (ev) => setImages(prev => (prev ? prev + '\n' : '') + (ev.target?.result as string));
+              reader.readAsDataURL(file);
+            });
+            e.target.value = '';
+          }} />
+        </label>
+      </div>
+      <textarea className="admin-input" rows={3} value={images} onChange={(e) => setImages(e.target.value)} placeholder={'https://... \nhttps://...  (kapak dışındaki fotoğraflar haber içinde galeri olarak gösterilir)'} />
+      {images.trim() && (
+        <div className="admin-gallery-preview">
+          {images.split('\n').map(s => s.trim()).filter(Boolean).map((src, i) => (
+            <img key={i} src={src} alt="" onError={(e) => (e.currentTarget.style.display = 'none')} />
+          ))}
+        </div>
+      )}
+
+      <label className="admin-label">Video <span className="admin-muted">(mp4/webm dosya bağlantısı veya YouTube/Vimeo linki — isteğe bağlı)</span></label>
+      <input className="admin-input" value={video} onChange={(e) => setVideo(e.target.value)} placeholder="https://www.youtube.com/watch?v=... veya https://.../video.mp4" />
 
       <label className="admin-label">Etiketler <span className="admin-muted">(virgülle ayırın)</span></label>
       <input className="admin-input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="kocaeli, belediye, gündem" />

@@ -77,6 +77,65 @@ function firstImgFromHtml(html) {
   return null;
 }
 
+// HTML içindeki TÜM görselleri (galeri) topla: temizle, tekilleştir, kapak
+// görselini ele, en fazla `max` tane döndür. src ve data-src/srcset dikkate alınır.
+function galleryFromHtml(html, exclude, base, max = 6) {
+  if (!html) return [];
+  const out = [];
+  const seen = new Set(exclude ? [exclude] : []);
+  const re = /<img[^>]+(?:data-src|data-original|src)=["']([^"'>]+)["']/gi;
+  let m;
+  while ((m = re.exec(html)) && out.length < max) {
+    const cleaned = cleanImageUrl(m[1], base);
+    if (cleaned && !seen.has(cleaned)) { seen.add(cleaned); out.push(cleaned); }
+  }
+  return out;
+}
+
+// HTML içinden video bağlantısı çıkar: og:video meta, YouTube/Vimeo iframe,
+// ya da doğrudan <video>/<source> dosyası. Bulunamazsa null.
+function videoFromHtml(html, base) {
+  if (!html) return null;
+  // 1) og:video / og:video:url / twitter:player meta etiketleri
+  const meta = html.match(/<meta[^>]+(?:property|name)=["'](?:og:video(?::url|:secure_url)?|twitter:player)["'][^>]+content=["']([^"'>]+)["']/i)
+    || html.match(/<meta[^>]+content=["']([^"'>]+)["'][^>]+(?:property|name)=["'](?:og:video(?::url|:secure_url)?|twitter:player)["']/i);
+  if (meta && meta[1]) {
+    const v = meta[1].trim().replace(/&amp;/g, '&');
+    if (/youtube|youtu\.be|vimeo|\.(mp4|webm|m3u8)/i.test(v)) return v.startsWith('//') ? 'https:' + v : v;
+  }
+  // 2) YouTube / Vimeo iframe gömülü
+  const iframe = html.matchAll(/<iframe[^>]+src=["']([^"'>]+)["']/gi);
+  for (const f of iframe) {
+    let src = f[1].trim().replace(/&amp;/g, '&');
+    if (src.startsWith('//')) src = 'https:' + src;
+    if (/(?:youtube(?:-nocookie)?\.com|youtu\.be|player\.vimeo\.com)/i.test(src)) return src;
+  }
+  // 3) Doğrudan <video>/<source> dosyası
+  const vid = html.match(/<(?:video|source)[^>]+src=["']([^"'>]+\.(?:mp4|webm|ogg|m4v))["']/i);
+  if (vid && vid[1]) {
+    let src = vid[1].trim().replace(/&amp;/g, '&');
+    if (src.startsWith('//')) src = 'https:' + src;
+    else if (src.startsWith('/') && base) { try { src = new URL(src, base).href; } catch { return null; } }
+    if (/^https?:\/\//i.test(src)) return src;
+  }
+  return null;
+}
+
+// Makale sayfasının ham HTML'ini çek (galeri + video harvesti için).
+// Boyut/zaman sınırlı; başarısız olursa null.
+async function fetchRawHtml(url) {
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const ct = res.headers.get('content-type') || '';
+    if (!/html/i.test(ct)) return null;
+    const text = await res.text();
+    return text.slice(0, 800 * 1024); // ilk ~800KB yeter (og etiketleri ve içerik baştadır)
+  } catch {
+    return null;
+  }
+}
+
 function pickMedia(arr) {
   if (!arr) return null;
   const list = Array.isArray(arr) ? arr : [arr];
@@ -165,6 +224,29 @@ async function enrichArticle(news) {
       const img = cleanImageUrl(article.image, news.link);
       if (img) news.image = img;
     }
+
+    // Galeri: makale içeriğindeki ek görseller (kapak hariç, en fazla 6)
+    let gallery = galleryFromHtml(article.content, news.image, news.link, 6);
+    // Video: önce çıkarılan içerikten dene
+    let video = videoFromHtml(article.content, news.link);
+
+    // Video ya da yeterli galeri yoksa, sayfanın ham HTML'inden harvest et
+    // (og:video, YouTube/Vimeo iframe, ek görseller — birçok site videoyu
+    // temizlenmiş içerikten çıkardığı için ham sayfa daha zengin olur).
+    if (!video || gallery.length < 2) {
+      const raw = await fetchRawHtml(news.link);
+      if (raw) {
+        if (!video) video = videoFromHtml(raw, news.link);
+        if (gallery.length < 6) {
+          const more = galleryFromHtml(raw, news.image, news.link, 6);
+          const set = new Set(gallery);
+          for (const g of more) { if (!set.has(g)) { set.add(g); gallery.push(g); } if (gallery.length >= 6) break; }
+        }
+      }
+    }
+
+    if (gallery.length) news.images = gallery;
+    if (video) news.video = video;
   } catch {
     // çıkarma başarısız — RSS içeriği/görseli kalır
   }
