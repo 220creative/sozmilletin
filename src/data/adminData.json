@@ -151,5 +151,17 @@
     "Asayiş",
     "Spor",
     "Magazin"
+  ],
+  "users": [
+    {
+      "username": "Muhabir 1",
+      "passHash": "d7c81d7494c3d3d8b701abc80315308e56786f4b0c008c6263301c42e7bc5cad",
+      "role": "editor"
+    },
+    {
+      "username": "Muhabir2",
+      "passHash": "21c29a3508754b8b0d75311ad5e16431d286241117f23b4c886b4a6257bd1f5c",
+      "role": "editor"
+    }
   ]
 }
