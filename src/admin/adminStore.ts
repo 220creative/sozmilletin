@@ -18,22 +18,54 @@ const LIVE_SOURCES = [
   `https://cdn.jsdelivr.net/gh/${REPO}@main/src/data/adminData.json`,
 ];
 
-// Uzak (canlı) yayın verisini çekip PUB'ı güncelle. Başarı/başarısızlık fark
-// etmeksizin döner — başarısızsa gömülü veriyle sessizce devam edilir, akış
-// asla kilitlenmez. Çağıran taraf sonrasında getMergedNews'i yeniden çalıştırır.
-export async function loadLiveData(): Promise<boolean> {
+// En güncel yayın verisini (adminData.json) uzaktan çek — parse edilmiş nesne
+// ya da null döner. loadLiveData ve syncFromLive bunu paylaşır.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchLiveData(): Promise<any | null> {
   for (const src of LIVE_SOURCES) {
     try {
       const res = await fetch(`${src}?t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) continue;
       const data = await res.json();
-      if (data && typeof data === 'object') {
-        PUB = data;
-        return true;
-      }
+      if (data && typeof data === 'object') return data;
     } catch { /* sonraki kaynağı dene */ }
   }
+  return null;
+}
+
+// Public site: canlı yayın verisini çekip PUB'ı güncelle (ziyaretçiler için).
+// Başarısızsa gömülü veriyle sessizce devam edilir; akış asla kilitlenmez.
+export async function loadLiveData(): Promise<boolean> {
+  const d = await fetchLiveData();
+  if (d) { PUB = d; return true; }
   return false;
+}
+
+// Admin: canlı (yayınlanmış) veriyi yerel çalışma kopyasına (localStorage) çek.
+// Böylece her cihaz paneli açtığında EN GÜNCEL içerikle başlar — başka cihazlardan
+// yayınlananlar görünür ve yayınlarken kimse kimsenin içeriğini ezmez (ortak veri
+// deposu davranışı). Yerelde olup canlıda olmayan (henüz yayınlanmamış) taslaklar
+// KORUNUR: manuel haberler birleştirilir; düzenleme/gizli/pinli için yerel üste biner.
+export async function syncFromLive(): Promise<boolean> {
+  const d = await fetchLiveData();
+  if (!d) return false;
+  PUB = d;
+  // manual: birleşim (canlı + yerelde olup canlıda olmayan yayınlanmamış taslaklar)
+  const liveManual: NewsItem[] = d.manual || [];
+  const liveIds = new Set(liveManual.map((m: NewsItem) => m.id));
+  const localExtra = getManualNews().filter(m => !liveIds.has(m.id));
+  write(K.manual, [...liveManual, ...localExtra]);
+  // düzenlemeler / gizli / pinli: canlı taban + yerel üstüne (birleşim)
+  write(K.edits, { ...(d.edits || {}), ...getEdits() });
+  write(K.hidden, Array.from(new Set([...(d.hidden || []), ...getHidden()])));
+  write(K.pinned, Array.from(new Set([...(d.pinned || []), ...getPinned()])));
+  // tekil / ayar alanları: canlıyı taban al (auto-publish sayesinde yerel zaten güncel)
+  if (d.heroId && !localStorage.getItem(K.heroId)) localStorage.setItem(K.heroId, d.heroId);
+  if (Array.isArray(d.ads) && d.ads.length) write(K.ads, d.ads);
+  if (Array.isArray(d.categories) && d.categories.length) write(K.categories, d.categories);
+  if (d.settings) write(K.settings, { ...d.settings, ...read<Partial<SiteSettings>>(K.settings, {}) });
+  if (Array.isArray(d.users)) write(K.users, d.users);
+  return true;
 }
 
 // Admin paneli tüm değişiklikleri tarayıcının localStorage'ında saklar (backend yok).

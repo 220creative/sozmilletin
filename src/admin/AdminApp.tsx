@@ -831,6 +831,26 @@ export const AdminApp: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, force] = useState(0);
   const refresh = () => force(x => x + 1);
+  const [syncing, setSyncing] = useState(false);
+
+  // Panel açılınca canlı (yayınlanmış) içeriği indir → her cihaz en güncel veriyle
+  // başlar, cihazlar birbirini ezmez (ortak veri deposu davranışı).
+  useEffect(() => {
+    if (!authed) return;
+    let alive = true;
+    store.syncFromLive().then(ok => { if (alive && ok) refresh(); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed]);
+
+  // Elle "Canlıdan Eşitle": diğer cihazlardan yayınlananları çeker.
+  const doSync = async () => {
+    setSyncing(true);
+    const ok = await store.syncFromLive();
+    setSyncing(false);
+    refresh();
+    toast(ok ? 'Canlı içerik yüklendi ✓ (diğer cihazlardaki yayınlar dahil)' : 'Eşitlenemedi — internet bağlantısını kontrol edin.', ok ? 'ok' : 'err');
+  };
 
   if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
 
@@ -884,6 +904,9 @@ export const AdminApp: React.FC = () => {
         <div className="admin-logo desktop-only">SÖZ<span>.</span>MİLLETİN</div>
         <div className="admin-logo-sub desktop-only">YÖNETİM</div>
         <button className="admin-publish-btn" onClick={() => { setView('publish'); setIsMobileMenuOpen(false); }}><UploadCloud size={16} /> <span>Yayınla</span></button>
+        <button className="admin-sync-btn" onClick={doSync} disabled={syncing} title="Diğer cihazlardan yayınlanan içeriği çek">
+          <RotateCcw size={15} className={syncing ? 'spin' : ''} /> <span>{syncing ? 'Eşitleniyor…' : 'Canlıdan Eşitle'}</span>
+        </button>
         <nav>
           <button className="hl" onClick={() => go('form', null)}><Plus size={17} /> <span>Yeni Haber</span></button>
           {nav.map(n => { const I = n.icon; return (
