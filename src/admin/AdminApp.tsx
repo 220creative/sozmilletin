@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { NewsItem } from '../data/mockData';
 import { mockNews } from '../data/mockData';
 import scrapedNewsData from '../data/scrapedNews.json';
@@ -23,6 +23,47 @@ const toLocalInput = (ts?: number) => {
   const d = new Date(ts - new Date().getTimezoneOffset() * 60000);
   return d.toISOString().slice(0, 16);
 };
+
+/* ================= Otomatik Yayın + Bildirim (toast) =================
+   Amaç: "Kaydet" tek başına yeterli olsun. Kaydedince değişiklik otomatik
+   olarak GitHub'a gönderilir (token'lı cihazda) ve herkeste canlı olur —
+   böylece ayrı "Yayınla" adımını unutma ve "yanlış cihazdan yayınlama"
+   sorunları ortadan kalkar. Token yoksa net bir uyarı gösterilir. */
+type ToastKind = 'ok' | 'err' | 'info';
+let _emitToast: ((msg: string, kind: ToastKind) => void) | null = null;
+function toast(msg: string, kind: ToastKind = 'info') { _emitToast?.(msg, kind); }
+
+const Toaster: React.FC = () => {
+  const [t, setT] = useState<{ msg: string; kind: ToastKind; id: number } | null>(null);
+  useEffect(() => {
+    _emitToast = (msg, kind) => {
+      const id = Date.now();
+      setT({ msg, kind, id });
+      // 'info' (Yayınlanıyor…) kalıcı kalır; ok/err 6 sn sonra kaybolur
+      if (kind !== 'info') setTimeout(() => setT(cur => (cur && cur.id === id ? null : cur)), 6000);
+    };
+    return () => { _emitToast = null; };
+  }, []);
+  if (!t) return null;
+  return (
+    <div className={`admin-toast admin-toast--${t.kind}`} role="status" onClick={() => setT(null)}>
+      {t.msg}
+    </div>
+  );
+};
+
+// Yerel kaydetten sonra otomatik yayınla. Token varsa GitHub'a gönderir (herkeste
+// canlı olur); yoksa net uyarı verir. Fire-and-forget çağrılabilir (durumu toast gösterir).
+async function autoPublish(): Promise<boolean> {
+  if (!store.getToken()) {
+    toast('Kaydedildi ✓ — ama HERKESE AÇIK DEĞİL. Bu cihazda bir kez "Yayınla" sekmesinden token girin.', 'err');
+    return false;
+  }
+  toast('Yayınlanıyor… (herkese açık hale getiriliyor)', 'info');
+  const r = await store.publish();
+  toast(r.ok ? 'Yayınlandı 🎉 Değişiklik herkeste görünür.' : r.msg, r.ok ? 'ok' : 'err');
+  return r.ok;
+}
 
 /* ================= Giriş ================= */
 const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
@@ -101,6 +142,7 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
       store.setHeroId(makeHero ? id : (store.getHeroId() === id ? null : store.getHeroId()));
       if (pin !== store.isPinned(id)) store.togglePinned(id);
     }
+    autoPublish();   // kaydedilen haberi otomatik olarak herkese açık yap
     onDone();
   };
 
@@ -233,8 +275,11 @@ const NewsForm: React.FC<{ editing: NewsItem | null; onDone: () => void; onCance
 
       <div className="admin-form-actions">
         <button type="button" className="admin-btn-ghost" onClick={onCancel}>Vazgeç</button>
-        <button type="submit" className="admin-btn-primary"><Save size={16} /> Kaydet</button>
+        <button type="submit" className="admin-btn-primary"><Save size={16} /> Kaydet ve Yayınla</button>
       </div>
+      <p className="admin-hint" style={{ textAlign: 'right', marginTop: 6 }}>
+        Kaydedince otomatik yayınlanır ve herkeste görünür.{!store.getToken() && ' (Bu cihazda önce “Yayınla” sekmesinden token girin.)'}
+      </p>
     </form>
   );
 };
@@ -309,7 +354,7 @@ const AdsManager: React.FC = () => {
   const [slots, setSlots] = useState<AdSlot[]>(() => store.getAdSlots().map(a => ({ ...a })));
   const [ok, setOk] = useState(false);
   const upd = (i: number, patch: Partial<AdSlot>) => { setSlots(p => p.map((a, idx) => idx === i ? { ...a, ...patch } : a)); setOk(false); };
-  const persist = () => { store.saveAdSlots(slots); setOk(true); };
+  const persist = () => { store.saveAdSlots(slots); setOk(true); autoPublish(); };
 
   return (
     <div>
@@ -418,7 +463,7 @@ const CategoryManager: React.FC = () => {
     const j = i + dir; if (j < 1 || j >= cats.length) return; // Tümü hep başta
     const copy = [...cats];[copy[i], copy[j]] = [copy[j], copy[i]]; setCats(copy); setOk(false);
   };
-  const persist = () => { store.saveCategories(cats); setOk(true); };
+  const persist = () => { store.saveCategories(cats); setOk(true); autoPublish(); };
   return (
     <div>
       <div className="admin-section-head"><h2>Kategoriler</h2><button className="admin-btn-primary" onClick={persist}><Save size={16} /> Kaydet</button></div>
@@ -449,7 +494,7 @@ const SeoSettings: React.FC = () => {
   const [s, setS] = useState<SiteSettings>(() => store.getSettings());
   const [ok, setOk] = useState(false);
   const upd = (patch: Partial<SiteSettings>) => { setS(p => ({ ...p, ...patch })); setOk(false); };
-  const save = () => { store.saveSettings(s); setOk(true); };
+  const save = () => { store.saveSettings(s); setOk(true); autoPublish(); };
   return (
     <div>
       <div className="admin-section-head"><h2>SEO & Site Bilgileri</h2><button className="admin-btn-primary" onClick={save}><Save size={16} /> Kaydet</button></div>
@@ -489,7 +534,7 @@ const LookSettings: React.FC = () => {
   const [s, setS] = useState<SiteSettings>(() => store.getSettings());
   const [ok, setOk] = useState(false);
   const upd = (patch: Partial<SiteSettings>) => { setS(p => ({ ...p, ...patch })); setOk(false); };
-  const save = () => { store.saveSettings(s); setOk(true); };
+  const save = () => { store.saveSettings(s); setOk(true); autoPublish(); };
   const colors = ['#b91c1c', '#e30613', '#0284c7', '#059669', '#7c3aed', '#ea580c', '#0f172a'];
   return (
     <div>
@@ -719,7 +764,7 @@ const UserManager: React.FC = () => {
     const r = await store.addUser(uname, pw, urole);
     setBusy(false);
     setMsg(r.msg);
-    if (r.ok) { setUname(''); setPw(''); setURole('editor'); refresh(); }
+    if (r.ok) { setUname(''); setPw(''); setURole('editor'); refresh(); autoPublish(); }
   };
 
   return (
@@ -764,7 +809,7 @@ const UserManager: React.FC = () => {
                 <span style={{ fontWeight: 600 }}>{u.username}</span>
                 <span className="badge cat" style={{ fontSize: 11 }}>{u.role === 'admin' ? 'Admin' : 'Editör'}</span>
                 <button className="admin-btn-danger" style={{ marginLeft: 'auto', padding: '4px 10px' }}
-                  onClick={() => { if (confirm(`"${u.username}" silinsin mi?`)) { store.removeUser(u.username); refresh(); } }}>
+                  onClick={() => { if (confirm(`"${u.username}" silinsin mi?`)) { store.removeUser(u.username); refresh(); autoPublish(); } }}>
                   <Trash size={14} /> Sil
                 </button>
               </div>
@@ -821,6 +866,7 @@ export const AdminApp: React.FC = () => {
 
   return (
     <div className="admin-root">
+      <Toaster />
       {/* Mobil Header */}
       <div className="admin-mobile-header">
         <div className="admin-logo">SÖZ<span>.</span>MİLLETİN</div>
@@ -901,10 +947,10 @@ export const AdminApp: React.FC = () => {
                     </div>
                     <div className="admin-news-actions">
                       <button title="Düzenle" onClick={() => go('form', n)}><Pencil size={15} /></button>
-                      {!isEditor && <button title="Manşet yap" className={isHero ? 'on' : ''} onClick={() => { store.setHeroId(isHero ? null : n.id); refresh(); }}><Star size={15} /></button>}
-                      {!isEditor && <button title="Öne çıkar" className={pinned ? 'on' : ''} onClick={() => { store.togglePinned(n.id); refresh(); }}><Pin size={15} /></button>}
-                      {!isEditor && <button title={hidden ? 'Göster' : 'Gizle'} onClick={() => { store.toggleHidden(n.id); refresh(); }}>{hidden ? <Eye size={15} /> : <EyeOff size={15} />}</button>}
-                      {manual && <button title="Sil" className="danger" onClick={() => { if (confirm('Bu haber silinsin mi?')) { store.deleteManualNews(n.id); refresh(); } }}><Trash2 size={15} /></button>}
+                      {!isEditor && <button title="Manşet yap" className={isHero ? 'on' : ''} onClick={() => { store.setHeroId(isHero ? null : n.id); refresh(); autoPublish(); }}><Star size={15} /></button>}
+                      {!isEditor && <button title="Öne çıkar" className={pinned ? 'on' : ''} onClick={() => { store.togglePinned(n.id); refresh(); autoPublish(); }}><Pin size={15} /></button>}
+                      {!isEditor && <button title={hidden ? 'Göster' : 'Gizle'} onClick={() => { store.toggleHidden(n.id); refresh(); autoPublish(); }}>{hidden ? <Eye size={15} /> : <EyeOff size={15} />}</button>}
+                      {manual && <button title="Sil" className="danger" onClick={() => { if (confirm('Bu haber silinsin mi?')) { store.deleteManualNews(n.id); refresh(); autoPublish(); } }}><Trash2 size={15} /></button>}
                     </div>
                   </div>
                 );
