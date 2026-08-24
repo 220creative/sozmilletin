@@ -2,11 +2,39 @@ import type { NewsItem } from '../data/mockData';
 import { mockAds, CATEGORIES } from '../data/mockData';
 import adminData from '../data/adminData.json';
 
-// Yayınlanan admin verisi (build'e gömülü). Ziyaretçiler bunu görür;
-// editörün localStorage'ı varsa onun üstüne biner (taslak).
+// Yayınlanan admin verisi. Build'e gömülü kopya ilk boyama ve çevrimdışı için
+// taban oluşturur; uygulama açılışında loadLiveData() en güncel adminData.json'ı
+// depodan (public) çekip PUB'ı onunla değiştirir. Böylece yeni yayınlanan manuel
+// haberler, TÜM sitenin yeniden derlenip FTP ile yüklenmesini beklemeden herkeste
+// anında görünür. Editörün localStorage'ı varsa yine onun üstüne biner (taslak).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PUB = adminData as any;
+let PUB = adminData as any;
 const REPO = '220creative/sozmilletin';
+
+// En güncel adminData.json'ı çalışma anında çekmek için (public site).
+// raw.githubusercontent en tazedir (~dakikalar); jsDelivr yedek CDN'dir.
+const LIVE_SOURCES = [
+  `https://raw.githubusercontent.com/${REPO}/main/src/data/adminData.json`,
+  `https://cdn.jsdelivr.net/gh/${REPO}@main/src/data/adminData.json`,
+];
+
+// Uzak (canlı) yayın verisini çekip PUB'ı güncelle. Başarı/başarısızlık fark
+// etmeksizin döner — başarısızsa gömülü veriyle sessizce devam edilir, akış
+// asla kilitlenmez. Çağıran taraf sonrasında getMergedNews'i yeniden çalıştırır.
+export async function loadLiveData(): Promise<boolean> {
+  for (const src of LIVE_SOURCES) {
+    try {
+      const res = await fetch(`${src}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        PUB = data;
+        return true;
+      }
+    } catch { /* sonraki kaynağı dene */ }
+  }
+  return false;
+}
 
 // Admin paneli tüm değişiklikleri tarayıcının localStorage'ında saklar (backend yok).
 // Herkese açık site, bu katmanı taban haberlerin üstüne uygulayarak gösterir.

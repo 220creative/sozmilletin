@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 // Yönetim paneli yalnızca /admin açıldığında yüklenir (ana bundle'ı şişirmesin)
 const AdminApp = lazy(() => import('./admin/AdminApp').then(m => ({ default: m.AdminApp })));
-import { getMergedNews, getSettings, applyTheme, injectAnalytics } from './admin/adminStore';
+import { getMergedNews, getSettings, applyTheme, injectAnalytics, loadLiveData } from './admin/adminStore';
 import { Header } from './components/Header';
 import { TopBar } from './components/TopBar';
 import { MarketTicker } from './components/MarketTicker';
@@ -29,12 +29,26 @@ function App() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [mounted, setMounted] = useState(false);
+  // Canlı yayın verisi (uzak adminData.json) çekimi tamamlandı mı? Detay sayfası,
+  // çekim sürerken "bulunamadı" yerine "yükleniyor" göstersin diye kullanılır.
+  const [liveReady, setLiveReady] = useState(false);
   // Admin katmanı (elle eklenen/düzenlenen/gizlenen/öne çıkarılan) taban haberlere uygulanır
   const [newsList, setNewsList] = useState<NewsItem[]>(() => getMergedNews(scrapedNews));
 
   const settings = getSettings();
 
-  useEffect(() => { setMounted(true); applyTheme(); injectAnalytics(); }, []);
+  useEffect(() => {
+    setMounted(true);
+    applyTheme();
+    injectAnalytics();
+    // En güncel yayın verisini çek; gelince haber listesini ve tema/analytics'i
+    // yeniden uygula. Yeni yayınlanan haberler böylece redeploy beklemeden görünür.
+    loadLiveData().then(() => {
+      setNewsList(getMergedNews(scrapedNews));
+      applyTheme();
+      injectAnalytics();
+    }).finally(() => setLiveReady(true));
+  }, []);
 
 
 
@@ -131,6 +145,7 @@ function App() {
                   savedNewsIds={savedNewsIds}
                   onToggleSave={handleToggleSave}
                   onView={handleView}
+                  liveLoading={!liveReady}
                 />
               }
             />

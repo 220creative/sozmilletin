@@ -18,6 +18,9 @@ interface NewsDetailPageProps {
   savedNewsIds: string[];
   onToggleSave: (id: string) => void;
   onView: (id: string) => void;
+  // Uzak (canlı) yayın verisi hâlâ yükleniyorsa true. Yeni yayınlanan bir haber
+  // henüz gelmemiş olabileceğinden, bu sürede "bulunamadı" yerine "yükleniyor" göster.
+  liveLoading?: boolean;
 }
 
 const commentsKey = (id: string) => `comments_${id}`;
@@ -42,7 +45,7 @@ const commentTime = (c: Comment): string => {
   return new Date(c.ts).toLocaleDateString('tr-TR');
 };
 
-export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedNewsIds, onToggleSave, onView }) => {
+export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedNewsIds, onToggleSave, onView, liveLoading }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const news = newsList.find(n => n.id === id);
@@ -70,6 +73,16 @@ export const NewsDetailPage: React.FC<NewsDetailPageProps> = ({ newsList, savedN
   }, [id]);
 
   if (!news) {
+    // Canlı yayın verisi hâlâ çekiliyorsa haber az sonra gelebilir — hatalı
+    // "bulunamadı" göstermek yerine yükleniyor durumunu göster.
+    if (liveLoading) {
+      return (
+        <main className="main-content" style={{ textAlign: 'center', padding: '120px 20px' }}>
+          <div className="spinner" aria-hidden style={{ margin: '0 auto 20px' }} />
+          <p style={{ color: 'var(--text-muted)' }}>Haber yükleniyor…</p>
+        </main>
+      );
+    }
     return (
       <main className="main-content" style={{ textAlign: 'center', padding: '120px 20px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '28px', marginBottom: '12px' }}>Haber bulunamadı</h2>
